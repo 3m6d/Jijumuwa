@@ -9,30 +9,101 @@ import {
   ActivityIndicator,
   Image,
   ScrollView,
+  Alert,
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import axios, { AxiosError } from 'axios'; 
+import Constants from 'expo-constants';
 import { BackgroundGradient } from '@/components/BackgroundGradient';
 
 export default function RegisterScreen() {
-  const [userType, setUserType] = useState('elderly'); // Default to 'elderly'
+  const [userType, setUserType] = useState<'elderly' | 'caretaker'>('elderly'); // Type userType
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState(''); // For Elderly
   const [password, setPassword] = useState(''); // For Caretaker
   const [certification, setCertification] = useState(''); // For Caretaker
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleRegister = () => {
-    setLoading(true);
-    setTimeout(() => {
+  const handleRegister = async () => {
+    // Validation
+    if (!name.trim()) {
+      Alert.alert('Error', 'Name is required');
       setLoading(false);
-      console.log('Registration attempt with:', {
-        userType,
+      return;
+    }
+    if (!phoneNumber.match(/^\d{10}$/)) {
+      Alert.alert('Error', 'Phone Number must be 10 digits');
+      setLoading(false);
+      return;
+    }
+    if (userType === 'elderly' && pin.length !== 4) {
+      Alert.alert('Error', 'PIN must be exactly 4 digits');
+      setLoading(false);
+      return;
+    }
+    if (userType === 'caretaker' && password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = {
         name,
-        phoneNumber,
-        ...(userType === 'elderly' ? { pin } : { password, certification }),
-      });
-    }, 1000);
+        phone_number: phoneNumber,
+        password: userType === 'elderly' ? pin : password,
+        role: userType,
+        ...(userType === 'caretaker' && certification && { certification }),
+      };
+
+      console.log('API URL:', `${Constants.expoConfig?.extra?.apiUrl}/authentication/register/`);
+      console.log('Request Data:', data);
+
+      const response = await axios.post(
+      'http://192.168.1.75:8000/authentication/register/',  // Use explicit IP
+      data,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+
+
+    if (response.status === 201 || response.status === 200) {
+      // Success: Clear form and redirect to login
+        Alert.alert('Success', 'Registration successful! Please log in.');
+        setName('');
+        setPhoneNumber('');
+        setPin('');
+        setPassword('');
+        setCertification('');
+        router.push('/login');
+      } else {
+        // Failure: Throw error for catch block
+        throw new Error(response.data.errors || 'Registration failed');
+      }
+    } catch (error) {
+      // Handle Axios error
+      let message = 'Something went wrong';
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ errors?: Record<string, string[]> }>;
+        message =
+          axiosError.response?.data?.errors?.phone_number?.[0] ||
+          axiosError.response?.data?.errors?.non_field_errors?.[0] ||
+          axiosError.message ||
+          message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      Alert.alert('Error', message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { CONSTANT_WORDS_TO_SPEAK } from "@/constants";
+import { CONSTANT_WORDS_TO_SPEAK } from "@/constants/wordsToSpeak";
 import intentResponses from "@/constants/intentResponses";
 
 export class IntentProcessor {

@@ -31,7 +31,7 @@ export default function WelcomeScreen() {  return (
           Connect with your loved ones and caregivers in one secure platform
         </Text>
 
-        <Link href="/register" asChild>
+        <Link href="/(caretaker)/dashboard" asChild>
           <TouchableOpacity className="bg-blue-500 rounded-lg py-4 px-10 w-4/5 items-center mb-5 shadow-md">
             <Text className="text-lg font-bold text-white">Get Started</Text>
           </TouchableOpacity>

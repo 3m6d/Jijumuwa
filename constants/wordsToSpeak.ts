@@ -1,4 +1,4 @@
-const CONSTANT_WORDS_TO_SPEAK = {
+export const CONSTANT_WORDS_TO_SPEAK = {
   greet_customer:
     "नमस्कार, म दीपावली मल्ल द्वारा विकसित डिजिटल सहयोगी हुँ। यो च्याटबट विशेष गरी ज्येष्ठ नागरिकहरूका लागि सहज बनाउन प्रोजेक्ट जिजुमुवाको हिस्सा हो। तपाईंलाई कुनै जानकारी चाहिएमा कृपया सोध्नुहोला।",
   error_server:
@@ -30,5 +30,3 @@ export const GAME_PATTERNS = {
   HINT_PATTERN:
     /संकेत|हिन्ट|hint|जानकारी|next|अर्को|सुराक|सङ्केत|थप\s*जानकारी/i,
 };
-
-export default CONSTANT_WORDS_TO_SPEAK;

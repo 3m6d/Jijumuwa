@@ -57,8 +57,8 @@ export default {
       },
         "eas": {
             "projectId": "b31d4fd3-bbcf-4345-9b39-9831362e5441"
-          }
-
+          },
+          "apiUrl": IS_DEV ? "http://192.168.1.75:8000" : "https://your-production-url.com"
     }
   }
 }
