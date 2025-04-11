@@ -1,100 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
+import { BackgroundGradient } from '@/components/BackgroundGradient';
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(''); // Add local error state for persistent message
-  const { signIn, authState } = useAuth();
-  const router = useRouter();
 
-  // useEffect(() => {
-  //   if (authState.accessToken && !authState.isLoading) {
-  //     let targetRoute = '/(tabs)/login'; 
-  //     if (authState.userRole === 'elderly') {
-  //       targetRoute = '/(elderly)/dashboard';
-  //     } else if (authState.userRole === 'caretaker') {
-  //       targetRoute = '/(caretaker)/dashboard';
-  //     }
-  //     else return;
-  //     router.replace(targetRoute as any); 
-  //   }
-  //   else return;
-  // }, [authState.accessToken, authState.userRole, authState.isLoading, router]);
-
-  const handleLogin = async () => {
-    if (!phoneNumber || !password) {
-      setError('Phone number and password are required.');
-      return;
-    }
-    setError('');
+  const handleLogin = () => {
     setLoading(true);
-    try {
-      await signIn({ phone_number: phoneNumber, password });
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Login failed. Please try again.');
-    } finally {
+    
+    setTimeout(() => {
       setLoading(false);
-    }
+      console.log('Login attempt with:', { phoneNumber, password });
+      // You can add your authentication logic here later
+    }, 1000);
   };
 
-  // if (authState.isLoading) {
-  //   return (
-  //     <View className="flex-1 justify-center items-center bg-gray-100">
-  //       <ActivityIndicator size="large" />
-  //       <Text>Loading...</Text>
-  //     </View>
-  //   );
-  // }
-
-  // if (authState.accessToken) {
-  //   return (
-  //     <View className="flex-1 justify-center items-center bg-gray-100">
-  //       <ActivityIndicator size="large" />
-  //       <Text>Logging you in...</Text>
-  //     </View>
-  //   );
-  // }
-
-  // return (
-  //   <View className="flex-1 justify-center items-center bg-gray-100">
-  //     <Text>Loading...</Text>
-  //   </View>
-  // );
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <StatusBar barStyle="dark-content" />
+      <BackgroundGradient />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1 justify-center px-5"
       >
-        <Text className="text-3xl font-bold text-center mb-10 text-gray-800">Login</Text>
+        <View className="items-center mb-8">
+          <Image
+            source={require('../../assets/images/adaptive-icon.png')}
+            className="w-24 h-24"
+            resizeMode="contain"
+          />
+        </View>
 
-        {error ? <Text className="text-red-500 text-center mb-4">{error}</Text> : null}
+        <Text className="text-3xl font-bold text-slate-800 text-center mb-8">
+          Login
+        </Text>
 
         <TextInput
-          className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg"
+          className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
           placeholder="Phone Number"
           value={phoneNumber}
           onChangeText={setPhoneNumber}
           keyboardType="phone-pad"
-          autoComplete="tel"
           placeholderTextColor="#999"
         />
+        
         <TextInput
-          className="bg-white p-4 rounded-lg mb-6 border border-gray-300 text-lg"
+          className="bg-white p-4 rounded-lg mb-6 border border-gray-300 text-lg w-full shadow-sm"
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -103,32 +69,30 @@ export default function LoginScreen() {
         />
 
         <TouchableOpacity
-          className="bg-blue-500 p-4 rounded-lg mb-4 items-center"
+          className="bg-blue-500 rounded-lg py-4 px-10 w-full items-center mb-5 shadow-md"
           onPress={handleLogin}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white text-lg font-bold">Login</Text>
+            <Text className="text-lg font-bold text-white">Login</Text>
           )}
         </TouchableOpacity>
 
-        <Link href="/(tabs)/register" asChild>
-          <TouchableOpacity>
-            <Text className="text-blue-500 text-center text-lg">Don't have an account? Register</Text>
-          </TouchableOpacity>
-        </Link>
+        <View className="flex-row items-center justify-center mt-4">
+          <Text className="text-base text-gray-500 mr-1">Don't have an account?</Text>
+          <Link href="/(tabs)/register" asChild>
+            <TouchableOpacity>
+              <Text className="text-base font-bold text-blue-500">Register</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+        
+        <TouchableOpacity className="items-center mt-4">
+          <Text className="text-base text-gray-500">Forgot Password?</Text>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-
-// export default function LoginScreen() {
-//   return (
-//     <View className="flex-1 justify-center items-center bg-gray-100">
-//       <Text>Loading...</Text>
-//     </View>
-//   );
-// }

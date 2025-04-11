@@ -19,7 +19,7 @@ export const tabRoutes: TabRoutesConfig = {
     title: "Register",
     icon: "user-plus",
     headerShown: false,
-    hideTabBar: false,
+    hideTabBar: true,
   },
   login: {
     name: "login",
