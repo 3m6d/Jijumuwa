@@ -1,7 +1,5 @@
 export const intentResponses = {
-  // Existing intents (omitted for brevity)...
 
-  // New intents for elderly users feeling sad
   Emotional_Support:
     "मलाई थाहा छ, तपाईंलाई अहिले नरमाइलो लागिरहेको छ। म यहाँ तपाईंसँग छु। तपाईंलाई के कुराले दुखी बनाएको छ भनेर मसँग सेयर गर्न चाहनुहुन्छ? म सुन्न तयार छु, र सक्दो सहयोग गर्छु।",
 
@@ -32,8 +30,6 @@ export const intentResponses = {
   Connect_To_Helpline:
     "यदि तपाईंलाई धेरै दुख लागिरहेको छ भने, म तपाईंलाई सहायता हेल्पलाइनमा जोड्न सुझाव दिन्छु। नेपालमा मानसिक स्वास्थ्य हेल्पलाइन नम्बर ११६६ छ। म तपाईंलाई यो नम्बर डायल गर्न सहयोग गर्न सक्छु। चाहनुहुन्छ?",
 
-  // Other existing intents (omitted for brevity)...
 } as const;
 
-// Update the IntentProcessor to use this file
 export default intentResponses;

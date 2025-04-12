@@ -30,4 +30,16 @@ export type ElderlyRoutesConfig = {
   three: ElderlyScreenConfig;
 };
 
+export type CaretakerScreenConfig = {
+  name: string;
+  title: string;
+  icon: keyof typeof FontAwesome.glyphMap;
+  headerShown?: boolean;
+  hideTabBar?: boolean;
+};
+
+export type CaretakerRoutesConfig = {
+  dashboard: CaretakerScreenConfig;
+  profile: CaretakerScreenConfig;
+};
 

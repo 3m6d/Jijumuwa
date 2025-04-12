@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMedications } from '../../context/MedicationContext';
 import { MedicationForm } from './MedicationForm';
@@ -7,7 +7,7 @@ import { ItemCard } from '../ItemCard';
 import { MedicationFormData } from '../../types/caretaker';
 
 export const MedicationsTab: React.FC = () => {
-  const { medications, addMedication, updateMedication, deleteMedication } = useMedications();
+  const { medications, addMedication, updateMedication, deleteMedication, isLoading } = useMedications();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItemId, setCurrentItemId] = useState<string | null>(null);
@@ -47,6 +47,15 @@ export const MedicationsTab: React.FC = () => {
     }
     setIsModalVisible(false);
   };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text className="mt-2 text-gray-600">Loading medications...</Text>
+      </View>
+    );
+  }
 
   return (
     <View>

@@ -27,7 +27,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
-        <data android:scheme="com.manavkhaka.sarathi"/>
+        <data android:scheme="com.dipawoli.sarathi"/>
         <data android:scheme="exp+sarathi"/>
       </intent-filter>
     </activity>

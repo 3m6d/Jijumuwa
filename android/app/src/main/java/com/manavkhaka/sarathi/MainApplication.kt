@@ -1,4 +1,4 @@
-package com.manavkhaka.sarathi
+package com.dipawoli.sarathi
 
 import android.app.Application
 import android.content.res.Configuration

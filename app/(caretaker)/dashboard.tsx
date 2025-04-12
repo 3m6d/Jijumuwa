@@ -22,7 +22,7 @@ export default function CaretakerDashboard() {
         <ContactsProvider>
           <View className="flex-1 bg-gray-100">
             {/* Header */}
-            <DashboardHeader patientName="John Doe" />
+            <DashboardHeader patientName="Jijumuwa" />
 
             {/* Tab Navigation */}
             <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
