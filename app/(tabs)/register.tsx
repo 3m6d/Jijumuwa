@@ -103,7 +103,7 @@ export default function RegisterScreen() {
         };
       }
 
-      const apiUrl = `${Constants.expoConfig?.extra?.apiUrl || 'http://192.168.1.91:8000'}/authentication/register/`;
+      const apiUrl = `${Constants.expoConfig?.extra?.apiUrl || 'http://192.168.1.105:8000'}/authentication/register/`;
       console.log('API URL:', apiUrl);
       console.log('Request Data:', data);
 

@@ -241,7 +241,7 @@ export default function TabTwoScreen() {
         ];
         
         // Make API call to local LM Studio server
-        const response = await fetch('http://192.168.1.91:1234/v1/chat/completions', {
+        const response = await fetch('http://192.168.1.105:1234/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

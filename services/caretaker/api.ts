@@ -1,26 +1,28 @@
 // src/services/api.ts
 import axios from 'axios';
+import { getAccessToken } from '@/services/auth/authService';  
 
-// Base URL for your Django backend
-const API_BASE_URL = 'http://192.168.1.75/care'; 
+const API_BASE_URL = 'http://192.168.1.105/care'; 
 
 // Create axios instance with common configuration
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor for authentication if needed
-apiClient.interceptors.request.use((config) => {
-  // You can add authentication token here
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+
+apiClient.interceptors.request.use(
+  async (config) => {
+    const token = await getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Generic API service functions
 const apiService = {

@@ -8,7 +8,7 @@ export const appointmentService = {
     return await apiService.get(APPOINTMENTS_URL);
   },
   
-  getAppointmentById: async (id: string): Promise<Appointment> => {
+  getAppointmentById: async (id: number): Promise<Appointment> => {
     return await apiService.get(`${APPOINTMENTS_URL}${id}/`);
   },
   
@@ -16,11 +16,11 @@ export const appointmentService = {
     return await apiService.post(APPOINTMENTS_URL, appointmentData);
   },
   
-  updateAppointment: async (id: string, appointmentData: AppointmentFormData): Promise<Appointment> => {
+  updateAppointment: async (id: number, appointmentData: AppointmentFormData): Promise<Appointment> => {
     return await apiService.put(`${APPOINTMENTS_URL}${id}/`, appointmentData);
   },
   
-  deleteAppointment: async (id: string): Promise<void> => {
+  deleteAppointment: async (id: number): Promise<void> => {
     return await apiService.delete(`${APPOINTMENTS_URL}${id}/`);
   },
 };

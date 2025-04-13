@@ -12,9 +12,10 @@
 
 import * as SecureStore from 'expo-secure-store';
 import { Alert } from 'react-native';
+import { apiClient } from '../caretaker/api';
 
 // API server URL - Update this to match your server's address and port
-const API_URL = 'http://192.168.1.91:8000';
+const API_URL = 'http://192.168.1.105:8000';
 
 // SecureStore keys for storing auth data securely on the device
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -209,6 +210,17 @@ export const login = async (
     // Extract tokens and user data
     const { access, refresh, name,role } = data;
     console.log('[login] Login successful for user role:', role);
+    
+    // Set the access token in the apiClient for subsequent requests
+    apiClient.interceptors.request.use(
+      (config) => {
+      config.headers.Authorization = `Bearer ${access}`;
+      return config;
+      },
+      (error) => {
+      return Promise.reject(error);
+      }
+    );
     // Store authentication data securely
     await storeAuthData(access, refresh, name,role);
 
