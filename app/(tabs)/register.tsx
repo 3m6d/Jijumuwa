@@ -17,78 +17,118 @@ import Constants from 'expo-constants';
 import { BackgroundGradient } from '@/components/BackgroundGradient';
 
 export default function RegisterScreen() {
-  const [userType, setUserType] = useState<'elderly' | 'caretaker'>('elderly'); // Type userType
+  const [userType, setUserType] = useState<'elderly' | 'caretaker'>('elderly'); 
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [pin, setPin] = useState(''); // For Elderly
-  const [password, setPassword] = useState(''); // For Caretaker
-  const [certification, setCertification] = useState(''); // For Caretaker
+  
+  // For elderly user login/pin
+  const [pin, setPin] = useState(''); 
+  
+  // For caretaker's own account
+  const [password, setPassword] = useState(''); 
+  const [certification, setCertification] = useState(''); // Optional field for caretaker
+
+  // For caretaker: elderly user details
+  const [elderlyName, setElderlyName] = useState('');
+  const [elderlyPhone, setElderlyPhone] = useState('');
+  const [elderlyPin, setElderlyPin] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleRegister = async () => {
-    // Validation
+    // Basic validations for shared fields
     if (!name.trim()) {
-      Alert.alert('Error', 'Name is required');
-      setLoading(false);
+      Alert.alert('Error', 'Name is required for your account');
       return;
     }
     if (!phoneNumber.match(/^\d{10}$/)) {
-      Alert.alert('Error', 'Phone Number must be 10 digits');
-      setLoading(false);
+      Alert.alert('Error', 'Your phone number must be 10 digits');
       return;
     }
-    if (userType === 'elderly' && pin.length !== 4) {
-      Alert.alert('Error', 'PIN must be exactly 4 digits');
-      setLoading(false);
-      return;
-    }
-    if (userType === 'caretaker' && password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      setLoading(false);
-      return;
+
+    if (userType === 'elderly') {
+      if (pin.length !== 4) {
+        Alert.alert('Error', 'PIN must be exactly 4 digits for elderly');
+        return;
+      }
+    } else if (userType === 'caretaker') {
+      // Validate caretaker's account fields
+      if (password.length < 6) {
+        Alert.alert('Error', 'Password must be at least 6 characters for caretaker');
+        return;
+      }
+      // Validate nested elderly details
+      if (!elderlyName.trim()) {
+        Alert.alert('Error', 'Elderly name is required');
+        return;
+      }
+      if (!elderlyPhone.match(/^\d{10}$/)) {
+        Alert.alert('Error', 'Elderly phone number must be 10 digits');
+        return;
+      }
+      if (elderlyPin.length !== 4) {
+        Alert.alert('Error', 'Elderly PIN must be exactly 4 digits');
+        return;
+      }
+      // Prevent caretaker and elderly from using the same phone number
+      if (phoneNumber === elderlyPhone) {
+        Alert.alert('Error', 'Caretaker and elderly cannot have the same phone number');
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const data = {
+      // Build the request payload according to user type
+      let data: any = {
         name,
         phone_number: phoneNumber,
-        password: userType === 'elderly' ? pin : password,
         role: userType,
-        ...(userType === 'caretaker' && certification && { certification }),
       };
 
-      console.log('API URL:', `${Constants.expoConfig?.extra?.apiUrl}/authentication/register/`);
+      if (userType === 'elderly') {
+        data.password = pin;
+      } else if (userType === 'caretaker') {
+        data.password = password;
+        // Optionally add certification if provided
+        if (certification.trim()) {
+          data.certification = certification;
+        }
+        // Nest elderly user details into the payload
+        data.elderly_user = {
+          name: elderlyName,
+          phone_number: elderlyPhone,
+          password: elderlyPin,
+        };
+      }
+
+      const apiUrl = `${Constants.expoConfig?.extra?.apiUrl || 'http://192.168.1.91:8000'}/authentication/register/`;
+      console.log('API URL:', apiUrl);
       console.log('Request Data:', data);
 
-      const response = await axios.post(
-      'http://192.168.1.91:8000/authentication/register/',  // Use explicit IP
-      data,
-      {
+      const response = await axios.post(apiUrl, data, {
         headers: {
           'Content-Type': 'application/json',
         },
-      }
-    );
+      });
 
-
-
-    if (response.status === 201 || response.status === 200) {
-      // Success: Clear form and redirect to login
+      if (response.status === 201 || response.status === 200) {
         Alert.alert('Success', 'Registration successful! Please log in.');
+        // Clear form fields on success
         setName('');
         setPhoneNumber('');
         setPin('');
         setPassword('');
         setCertification('');
+        setElderlyName('');
+        setElderlyPhone('');
+        setElderlyPin('');
         router.push('/login');
       } else {
-        // Failure: Throw error for catch block
         throw new Error(response.data.errors || 'Registration failed');
       }
-    } catch (error) {
-      // Handle Axios error
+    } catch (error: any) {
       let message = 'Something went wrong';
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<{ errors?: Record<string, string[]> }>;
@@ -125,7 +165,7 @@ export default function RegisterScreen() {
             Register
           </Text>
 
-          {/* User Type Buttons at the Top */}
+          {/* User Type Buttons */}
           <View className="flex-row justify-between mb-6 w-full">
             <TouchableOpacity
               className={`flex-1 p-4 rounded-lg border mr-2 ${
@@ -147,7 +187,7 @@ export default function RegisterScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Name Input */}
+          {/* Caretaker and Elderly Shared Fields */}
           <TextInput
             className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
             placeholder="Name"
@@ -158,7 +198,6 @@ export default function RegisterScreen() {
             accessibilityLabel="Name Input"
           />
 
-          {/* Phone Number Input */}
           <TextInput
             className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
             placeholder="Phone Number"
@@ -169,28 +208,29 @@ export default function RegisterScreen() {
             accessibilityLabel="Phone Number Input"
           />
 
-          {/* Conditional Fields */}
           {userType === 'elderly' ? (
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-6 border border-gray-300 text-lg w-full shadow-sm"
-              placeholder="4-Digit PIN"
-              value={pin}
-              onChangeText={(text) => {
-                // Restrict to 4 digits
-                if (text.length <= 4 && /^\d*$/.test(text)) {
-                  setPin(text);
-                }
-              }}
-              keyboardType="numeric"
-              maxLength={4}
-              placeholderTextColor="#999"
-              accessibilityLabel="PIN Input"
-            />
-          ) : (
             <>
               <TextInput
+                className="bg-white p-4 rounded-lg mb-6 border border-gray-300 text-lg w-full shadow-sm"
+                placeholder="4-Digit PIN"
+                value={pin}
+                onChangeText={(text) => {
+                  if (text.length <= 4 && /^\d*$/.test(text)) {
+                    setPin(text);
+                  }
+                }}
+                keyboardType="numeric"
+                maxLength={4}
+                placeholderTextColor="#999"
+                accessibilityLabel="PIN Input"
+              />
+            </>
+          ) : (
+            <>
+              {/* Caretaker's Own Credentials */}
+              <TextInput
                 className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
-                placeholder="Password"
+                placeholder="Password (min 6 characters)"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -198,12 +238,47 @@ export default function RegisterScreen() {
                 accessibilityLabel="Password Input"
               />
               <TextInput
-                className="bg-white p-4 rounded-lg mb-6 border border-gray-300 text-lg w-full shadow-sm"
+                className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
                 placeholder="Caretaker Certification (Optional)"
                 value={certification}
                 onChangeText={setCertification}
                 placeholderTextColor="#999"
                 accessibilityLabel="Certification Input"
+              />
+
+              {/* Nested Elderly User Details */}
+              <Text className="text-lg font-bold text-slate-800 mb-2">Elderly User Details</Text>
+              <TextInput
+                className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
+                placeholder="Elderly Name"
+                value={elderlyName}
+                onChangeText={setElderlyName}
+                autoCapitalize="words"
+                placeholderTextColor="#999"
+                accessibilityLabel="Elderly Name Input"
+              />
+              <TextInput
+                className="bg-white p-4 rounded-lg mb-4 border border-gray-300 text-lg w-full shadow-sm"
+                placeholder="Elderly Phone Number"
+                value={elderlyPhone}
+                onChangeText={setElderlyPhone}
+                keyboardType="phone-pad"
+                placeholderTextColor="#999"
+                accessibilityLabel="Elderly Phone Input"
+              />
+              <TextInput
+                className="bg-white p-4 rounded-lg mb-6 border border-gray-300 text-lg w-full shadow-sm"
+                placeholder="4-Digit Elderly PIN"
+                value={elderlyPin}
+                onChangeText={(text) => {
+                  if (text.length <= 4 && /^\d*$/.test(text)) {
+                    setElderlyPin(text);
+                  }
+                }}
+                keyboardType="numeric"
+                maxLength={4}
+                placeholderTextColor="#999"
+                accessibilityLabel="Elderly PIN Input"
               />
             </>
           )}

@@ -207,16 +207,15 @@ export const login = async (
     // }
 
     // Extract tokens and user data
-    const { access, refresh, user,role } = data;
-    console.log('[login] Login successful for user role:', user.role);
-
+    const { access, refresh, name,role } = data;
+    console.log('[login] Login successful for user role:', role);
     // Store authentication data securely
-    await storeAuthData(access, refresh, user,role);
+    await storeAuthData(access, refresh, name,role);
 
     return {
       success: true,
       role,
-      name : name,
+      name,
     };
   } catch (error: any) {
     console.error('[login] Login error:', error);

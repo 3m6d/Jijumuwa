@@ -201,86 +201,6 @@ export default function TabTwoScreen() {
         setLoading(false);
       });
   };
-      
-  // const callChatbotAPI = async (
-  //   text: string,
-  //   intentResponse: IntentResponse,
-  //   ourResponse: string
-  // ) => {
-  //   try {
-  //     const genAI = new callChatbotAPI(
-  //       process.env.EXPO_PUBLIC_GEMINI_API_KEY || ""
-  //     );
-  //     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
-
-  //     const prompt = `
-  //   IDENTITY:
-  //     Name: Sarathi (Created by Dipawoli Malla)
-  //     Role: Elderly User Emotional Compassionate and helpful voice assistant 
-
-  //     CORE SERVICES & PROCESSES:
-
-  //     You are a emotional compassionate and helpful voice assistant specialising in having emotional and proactive conversation with elderly people. Always provide complete, confident answers.
-
-  //     CORE GUIDELINES:
-
-  //     Answer all aspects of user questions completely
-  //     Never refuse to answer
-  //     Provide solutions even for complex queries
-  //     Be practical and action-oriented
-
-  //     CONTEXT SETTINGS:
-
-  //     General Queries:
-
-  //     Provide Nepal-focused information
-  //     RESPONSE STYLE:
-
-  //     Friendly and conversational tone
-  //     Maximum 80 words per response
-  //     Use simple, clear language
-  //     Mix Nepali and English terms appropriately
-  //     Include specific steps and requirements
-  //     Dont add any contact information
-      
-  //     FOR UNCERTAIN CASES:
-  //     Provide best possible answer based on similar scenarios
-  //     Suggest practical alternatives
-  //     Include general process guidelines
-  //     Recommend next steps
-
-  //     If user asks for some volume of data they want then recommend the best possible plan available rather than saying no. User might
-  //     also ask based on no of days please suggest accrodingly.
-
-  //     If anyone asks who are you or wants to know your identity then say i am robot made by dipawoli malla for elderly users.
-  //     User Query: ${text}
-  //     Answer in Complete Nepali language only.
-  
-  //     If anyone asks who are you or wants to know your identity then say i am robot made by dipawoli malla for elderly users.
-  //     User Query: ${text}
-  //     Intent: ${intentResponse}
-  //     Our Response: ${ourResponse}
-
-  //     Previous Conversation: ${conversation}
-  //     Answer in Complete Nepali language only.
-  //     if question is in english reply in english.
-  //   `;
-
-  //     const result = await model.generateContent(prompt);
-  //     const response = await result.response.text();
-
-  //     if (response) {
-  //       speak(response);
-  //     } else {
-  //       speak(CONSTANT_WORDS_TO_SPEAK.error_server);
-  //     }
-  //   } catch (error) {
-  //     console.error("Gemini API Error:", error);
-  //     speak(CONSTANT_WORDS_TO_SPEAK.error_server);
-  //   }
-  // };
-  
-
       // Makes API call to chatbot backend with intent information
     const callChatbotAPI = async (
       text: string,
@@ -321,7 +241,7 @@ export default function TabTwoScreen() {
         ];
         
         // Make API call to local LM Studio server
-        const response = await fetch('http://localhost:1234/v1/chat/completions', {
+        const response = await fetch('http://192.168.1.91:1234/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
