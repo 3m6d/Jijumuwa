@@ -1,8 +1,6 @@
-
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import TrackPlayer, { Event, State, usePlaybackState, useProgress } from 'react-native-track-player';
-import Slider from '@react-native-community/slider';
 import tracks from '@/constants/tracks';
 
 export default function MusicPlayerScreen() {
@@ -18,19 +16,32 @@ export default function MusicPlayerScreen() {
 
     async function setupPlayer() {
       try {
+        // First register the playback service before anything else
+        TrackPlayer.registerPlaybackService(() => require('../../services/playbackService'));
+        
+        // Check if player is already initialized
+        let playerIsSetup = false;
+        try {
+          // This will throw an error if the player is not set up
+          await TrackPlayer.getState();
+          playerIsSetup = true;
+        } catch {
+          // Player is not set up yet
+          playerIsSetup = false;
+        }
+        
+        // Initialize player only if not already initialized
+        if (!playerIsSetup) {
+          await TrackPlayer.setupPlayer({
+            minBuffer: 15,
+            maxBuffer: 50,
+            playBuffer: 3,
+            waitForBuffer: true,
+          });
+        }
+        
         // Reset any existing players
         await TrackPlayer.reset();
-        
-        // Register playback service
-        TrackPlayer.registerPlaybackService(() => require('../../services/playbackService'));
-
-        // Initialize player
-        await TrackPlayer.setupPlayer({
-          minBuffer: 15,
-          maxBuffer: 50,
-          playBuffer: 3,
-          waitForBuffer: true,
-        });
 
         // Add tracks
         await TrackPlayer.add(tracks);
@@ -40,12 +51,15 @@ export default function MusicPlayerScreen() {
         }
       } catch (error) {
         console.log('Setup error:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        Alert.alert(
+          'Player Error',
+          'Failed to initialize music player: ' + errorMessage
+        );
       }
     }
 
-    if (isMounted) {
-      setupPlayer();
-    }
+    setupPlayer();
     
     return () => {
       isMounted = false;
@@ -53,22 +67,22 @@ export default function MusicPlayerScreen() {
     };
   }, []);
 
-useEffect(() => {
-  const trackChangeListener = TrackPlayer.addEventListener(
-    Event.PlaybackActiveTrackChanged,
-    async ({ track }) => {
-      if (typeof track === 'number') {
-        try {
-          const trackData = await TrackPlayer.getTrack(track);
-          if (trackData) {
-            setCurrentTrack(tracks.findIndex(t => t.id === trackData.id));
+  useEffect(() => {
+    const trackChangeListener = TrackPlayer.addEventListener(
+      Event.PlaybackActiveTrackChanged,
+      async ({ track }) => {
+        if (typeof track === 'number') {
+          try {
+            const trackData = await TrackPlayer.getTrack(track);
+            if (trackData) {
+              setCurrentTrack(tracks.findIndex(t => t.id === trackData.id));
+            }
+          } catch (error) {
+            console.log('Track change error:', error);
           }
-        } catch (error) {
-          console.log('Track change error:', error);
         }
       }
-    }
-  );
+    );
 
     return () => {
       trackChangeListener.remove();
@@ -105,10 +119,6 @@ useEffect(() => {
     }
   };
 
-  const seekTo = (value: number) => {
-    TrackPlayer.seekTo(value);
-  };
-
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
     const sec = Math.floor(seconds % 60);
@@ -126,7 +136,7 @@ useEffect(() => {
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
-=        <Text className="text-3xl font-bold mb-8">भजन</Text>
+        <Text className="text-3xl font-bold mb-8">भजन</Text>
         
         {tracks[currentTrack]?.artwork && (
           <Image 
@@ -141,16 +151,8 @@ useEffect(() => {
           <Text className="text-xl text-gray-600">{tracks[currentTrack]?.artist || 'Unknown Artist'}</Text>
         </View>
         
+        {/* Simple time display instead of slider */}
         <View className="w-80 mb-6">
-          <Slider
-            value={progress.position}
-            minimumValue={0}
-            maximumValue={progress.duration}
-            minimumTrackTintColor="#FF8C00"
-            maximumTrackTintColor="#D3D3D3"
-            thumbTintColor="#FF8C00"
-            onSlidingComplete={seekTo}
-          />
           <View className="flex-row justify-between">
             <Text className="text-gray-600">{formatTime(progress.position)}</Text>
             <Text className="text-gray-600">{formatTime(progress.duration)}</Text>
@@ -181,6 +183,6 @@ useEffect(() => {
             <Text className="text-2xl">⏭️</Text>
           </TouchableOpacity>
         </View>
-=    </View>
+    </View>
   );
 }

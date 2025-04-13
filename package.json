@@ -33,6 +33,7 @@
     "expo-status-bar": "~1.11.1",
     "expo-system-ui": "~2.9.3",
     "expo-web-browser": "~12.8.2",
+    "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "lucide-react-native": "^0.486.0",
     "nativewind": "^2.0.11",

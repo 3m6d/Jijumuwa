@@ -330,7 +330,7 @@ export default function TabTwoScreen() {
             model: "nepaligpt", // Model name as configured in LM Studio
             messages: messages,
             temperature: 0.7,
-            max_tokens: 300, // Adjust based on your needs
+            max_tokens: 300, 
             stream: false
           }),
         });

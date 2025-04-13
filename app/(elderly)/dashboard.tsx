@@ -21,7 +21,7 @@ export default function elderlyDashboard() {
 
         />
         <ActionButton
-          text="🎶गीत सुनाऊ🎶"
+          text="🎶भजन सुनाऊ🎶"
           onPress={() => router.replace("/(elderly)/three")}
           
         />

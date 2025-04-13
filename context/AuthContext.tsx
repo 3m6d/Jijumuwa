@@ -1,10 +1,14 @@
 // app/context/AuthContext.tsx
 import React, { createContext, useContext, useReducer, useEffect, useMemo } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import api from '../api'; // Ensure this points to your configured Axios instance
-import { AuthState, AuthAction, User, UserRole } from '../types'; // Ensure these types are defined correctly
+import { AuthState, AuthAction, User, UserRole } from '../types';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import axios from 'axios';
+
+const API_URL = axios.create({
+  baseURL: 'http://192.168.1.91:8000'
+});
 
 const router = useRouter();
 
@@ -18,7 +22,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Reducer remains the same as you provided
+// Reducer remains the same as  provided
 const authReducer = (prevState: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'RESTORE_TOKEN':
@@ -114,14 +118,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     () => ({
       signIn: async (data: { phone_number: string; password?: string }) => {
         try {
-          const response = await api.post('/authentication/login/', {
+          const response = await API_URL.post('/authentication/login/', {
             phone_number: data.phone_number,
             password: data.password,
           });
 
           // Ensure API response structure matches this destructuring
           const { access, refresh, role, name, id } = response.data;
-          const loggedInUser: User = { id, name, phone_number: data.phone_number, role };
+          const loggedInUser: User = { name, phone_number: data.phone_number, role };
 
           await SecureStore.setItemAsync('accessToken', access);
           await SecureStore.setItemAsync('refreshToken', refresh);
@@ -146,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const refreshToken = await SecureStore.getItemAsync('refreshToken');
           if (refreshToken) {
              // Attempt server-side logout, but don't block client-side logout if it fails
-             await api.post('/authentication/signout/', { refresh: refreshToken });
+             await API_URL.post('/authentication/signout/', { refresh: refreshToken });
           }
         } catch (error: any) {
           // Log error but continue with local sign out
@@ -158,14 +162,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await SecureStore.deleteItemAsync('userRole');
           await SecureStore.deleteItemAsync('user');
           dispatch({ type: 'SIGN_OUT' });
-          router.replace('/(tabs)/'); // Navigate after state update
+          router.replace('/(tabs)/login'); // Navigate after state update
         }
       },
       signUp: async (data: any) => {
         try {
           // Assume 'data' contains { name, phone_number, password, user_type }
           // as prepared by RegisterScreen
-          const response = await api.post('/authentication/register/', data);
+          const response = await API_URL.post('/authentication/register/', data);
 
           // Use a more generic success message or extract from response if available
           Alert.alert('Registration Successful', response.data?.message || 'You can now log in.');

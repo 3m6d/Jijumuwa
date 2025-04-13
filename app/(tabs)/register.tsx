@@ -63,7 +63,7 @@ export default function RegisterScreen() {
       console.log('Request Data:', data);
 
       const response = await axios.post(
-      'http://192.168.1.75:8000/authentication/register/',  // Use explicit IP
+      'http://192.168.1.91:8000/authentication/register/',  // Use explicit IP
       data,
       {
         headers: {
