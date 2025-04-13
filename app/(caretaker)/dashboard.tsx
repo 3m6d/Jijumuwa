@@ -35,16 +35,8 @@ export default function CaretakerDashboard() {
               {activeTab === 'contacts' && <ContactTab />}
             </ScrollView>
 
-            {/* FAB */}
-            <TouchableOpacity 
-              className="absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
-              onPress={() => {
-                // Handle FAB press - opens add modal for current active tab
-                // This could be handled by a custom hook or context
-              }}
-            >
-              <Ionicons name="add" size={30} color="white" />
-            </TouchableOpacity>
+     
+            
           </View>
         </ContactsProvider>
       </AppointmentProvider>

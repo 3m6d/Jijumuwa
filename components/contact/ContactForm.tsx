@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ContactFormData } from '../../types/caretaker';
 
@@ -32,10 +32,38 @@ const ContactForm: React.FC<ContactFormProps> = ({
     });
   };
 
+  const validateForm = (): boolean => {
+    // Validate name: must not be empty
+    if (!formData.name.trim()) {
+      Alert.alert('Validation Error', 'Contact name is required.');
+      return false;
+    }
+
+    // Validate phone number: must not be empty and should contain only digits.
+    if (!formData.phone.trim()) {
+      Alert.alert('Validation Error', 'Phone number is required.');
+      return false;
+    }
+
+    const phoneRegex = /^\d+$/; // Allows only digits; adjust if needed for your format
+    if (!phoneRegex.test(formData.phone)) {
+      Alert.alert('Validation Error', 'Phone number must contain only digits.');
+      return false;
+    }
+    
+    // Optionally: enforce a specific length, e.g., 10 digits
+    if (formData.phone.length !== 10) {
+      Alert.alert('Validation Error', 'Phone number must be exactly 10 digits.');
+      return false;
+    }
+    
+    // You can add validations for relationship if desired.
+
+    return true;
+  };
+
   const handleSubmit = () => {
-    // Basic validation
-    if (!formData.name.trim() || !formData.phone.trim()) {
-      // You could add more sophisticated validation or error messages here
+    if (!validateForm()) {
       return;
     }
     onSubmit(formData);
@@ -54,7 +82,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
       
       <TextInput
         className="border border-gray-300 rounded-lg p-2 mb-3"
-        placeholder="Relationship"
+        placeholder="Relationship (optional)"
         value={formData.relationship}
         onChangeText={(text) => handleChange('relationship', text)}
       />

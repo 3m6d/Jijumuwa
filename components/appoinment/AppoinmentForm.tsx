@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { AppointmentFormData } from '../../types/caretaker';
 
 interface AppointmentFormProps {
@@ -15,15 +15,13 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
   onCancel, 
   isEditMode = false 
 }) => {
-  const [formData, setFormData] = useState<AppointmentFormData>(
-    initialData || {
-      doctor: '',
-      specialty: '',
-      date: '',
-      time: '',
-      location: '',
-    }
-  );
+  const [formData, setFormData] = useState<AppointmentFormData>(initialData || {
+    doctor: '',
+    specialty: '',
+    date: '',
+    time: '',
+    location: '',
+  });
 
   const handleChange = (field: keyof AppointmentFormData, value: string) => {
     setFormData({
@@ -32,12 +30,37 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     });
   };
 
+  const validateForm = (): boolean => {
+    // Validate Doctor's Name
+    if (!formData.doctor.trim()) {
+      Alert.alert('Validation Error', 'Doctor Name is required.');
+      return false;
+    }
+
+    // Validate Date: must be in YYYY-MM-DD format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!formData.date.trim() || !dateRegex.test(formData.date)) {
+      Alert.alert('Validation Error', 'Please enter a valid date in YYYY-MM-DD format.');
+      return false;
+    }
+
+    // Validate Time: expecting HH:mm (24-hour clock)
+    const timeRegex = /^\d{2}:\d{2}$/;
+    if (!formData.time.trim() || !timeRegex.test(formData.time)) {
+      Alert.alert('Validation Error', 'Please enter a valid time in HH:mm format.');
+      return false;
+    }
+
+    // Optionally, more validations can be added (for example, checking if the appointment is set in the future)
+    return true;
+  };
+
   const handleSubmit = () => {
-    // Basic validation
-    if (!formData.doctor.trim() || !formData.date.trim()) {
-      // You could add more sophisticated validation or error messages here
+    if (!validateForm()) {
       return;
     }
+
+    // If needed, you can combine date and time into one field here or later in your service layer.
     onSubmit(formData);
   };
 
@@ -68,7 +91,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       
       <TextInput
         className="border border-gray-300 rounded-lg p-2 mb-3"
-        placeholder="Time"
+        placeholder="Time (HH:mm)"
         value={formData.time}
         onChangeText={(text) => handleChange('time', text)}
       />

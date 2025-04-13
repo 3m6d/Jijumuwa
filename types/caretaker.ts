@@ -9,11 +9,10 @@ export interface Medication {
 }
 
 export interface Appointment {
-  id: string;
-  doctor: string;
+  id: number;
+  doctor_name: string;
   specialty: string;
-  date: string;
-  time: string;
+  appointment_time: string;  time: string;
   location: string;
 }
 
