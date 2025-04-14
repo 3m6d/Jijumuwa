@@ -1,27 +1,47 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { AppointmentFormData } from '../../types/caretaker';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Platform,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Appointment } from "../../types/caretaker";
 
 interface AppointmentFormProps {
-  initialData?: AppointmentFormData;
-  onSubmit: (data: AppointmentFormData) => void;
+  initialData?: Appointment;
+  onSubmit: (
+    data:
+      | Appointment
+      | Pick<
+          Appointment,
+          "doctor_name" | "specialty" | "appointment_time" | "location"
+        >
+  ) => void;
   onCancel: () => void;
   isEditMode?: boolean;
 }
 
-const AppointmentForm: React.FC<AppointmentFormProps> = ({ 
-  initialData, 
-  onSubmit, 
-  onCancel, 
-  isEditMode = false 
+// Define the form data type without ID for new appointments
+type AppointmentFormData = Omit<Appointment, "id">;
+
+const AppointmentForm: React.FC<AppointmentFormProps> = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  isEditMode = false,
 }) => {
-  const [formData, setFormData] = useState<AppointmentFormData>(initialData || {
-    doctor_name: '',
-    specialty: '',
-    date: '',
-    time: '',
-    location: '',
+  const [formData, setFormData] = useState<AppointmentFormData>({
+    doctor_name: initialData?.doctor_name || "",
+    specialty: initialData?.specialty || "",
+    appointment_time: initialData?.appointment_time || "",
+    location: initialData?.location || "",
   });
+  const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [mode, setMode] = useState<"date" | "time">("date");
 
   const handleChange = (field: keyof AppointmentFormData, value: string) => {
     setFormData({
@@ -30,28 +50,52 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     });
   };
 
+  const showMode = (currentMode: "date" | "time") => {
+    setShowDateTimePicker(true);
+    setMode(currentMode);
+  };
+
+  const onDateTimeChange = (event: any, selectedDate?: Date) => {
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+
+      if (mode === "date") {
+        // After date is selected, show time picker
+        showMode("time");
+      } else {
+        // After time is selected, format and update the form
+        setShowDateTimePicker(false);
+        const formattedDateTime = selectedDate
+          .toISOString()
+          .slice(0, 16)
+          .replace("T", " ");
+        handleChange("appointment_time", formattedDateTime);
+      }
+    } else {
+      setShowDateTimePicker(false);
+    }
+  };
+
+  const showDateTimePickerModal = () => {
+    showMode("date");
+  };
+
   const validateForm = (): boolean => {
     // Validate Doctor's Name
     if (!formData.doctor_name.trim()) {
-      Alert.alert('Validation Error', 'Doctor Name is required.');
+      Alert.alert("Validation Error", "Doctor Name is required.");
       return false;
     }
 
-    // Validate Date: must be in YYYY-MM-DD format
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!formData.date.trim() || !dateRegex.test(formData.date)) {
-      Alert.alert('Validation Error', 'Please enter a valid date in YYYY-MM-DD format.');
+    // Validate Appointment Time
+    if (!formData.appointment_time.trim()) {
+      Alert.alert(
+        "Validation Error",
+        "Please select an appointment date and time."
+      );
       return false;
     }
 
-    // Validate Time: expecting HH:mm (24-hour clock)
-    const timeRegex = /^\d{2}:\d{2}$/;
-    if (!formData.time.trim() || !timeRegex.test(formData.time)) {
-      Alert.alert('Validation Error', 'Please enter a valid time in HH:mm format.');
-      return false;
-    }
-
-    // Optionally, more validations can be added (for example, checking if the appointment is set in the future)
     return true;
   };
 
@@ -60,62 +104,76 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       return;
     }
 
-    // If needed, you can combine date and time into one field here or later in your service layer.
-    onSubmit(formData);
+    // const appointmentData: Appointment = {
+    //   ...formData,
+    //   id: isEditMode && initialData ? initialData.id : 0,
+    // };
+    const appointmentData = isEditMode
+      ? { ...formData, id: initialData?.id }
+      : formData;
+
+    onSubmit(appointmentData);
   };
 
   return (
     <View className="p-4">
       <Text className="text-lg font-semibold mb-2">Appointment Details</Text>
-      
+
       <TextInput
         className="border border-gray-300 rounded-lg p-2 mb-3"
         placeholder="Doctor Name"
         value={formData.doctor_name}
-        onChangeText={(text) => handleChange('doctor_name', text)}
+        onChangeText={(text) => handleChange("doctor_name", text)}
       />
-      
+
       <TextInput
         className="border border-gray-300 rounded-lg p-2 mb-3"
         placeholder="Specialty"
         value={formData.specialty}
-        onChangeText={(text) => handleChange('specialty', text)}
+        onChangeText={(text) => handleChange("specialty", text)}
       />
-      
-      <TextInput
+
+      <TouchableOpacity
         className="border border-gray-300 rounded-lg p-2 mb-3"
-        placeholder="Date (YYYY-MM-DD)"
-        value={formData.date}
-        onChangeText={(text) => handleChange('date', text)}
-      />
-      
-      <TextInput
-        className="border border-gray-300 rounded-lg p-2 mb-3"
-        placeholder="Time (HH:mm)"
-        value={formData.time}
-        onChangeText={(text) => handleChange('time', text)}
-      />
-      
+        onPress={showDateTimePickerModal}
+      >
+        <Text
+          className={formData.appointment_time ? "text-black" : "text-gray-400"}
+        >
+          {formData.appointment_time || "Select Appointment Date and Time"}
+        </Text>
+      </TouchableOpacity>
+
+      {showDateTimePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode={mode}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onDateTimeChange}
+          minimumDate={new Date()}
+        />
+      )}
+
       <TextInput
         className="border border-gray-300 rounded-lg p-2 mb-3"
         placeholder="Location"
         value={formData.location}
-        onChangeText={(text) => handleChange('location', text)}
+        onChangeText={(text) => handleChange("location", text)}
       />
 
       <View className="flex-row justify-end mt-4">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={onCancel}
           className="px-4 py-2 mr-2 rounded-lg border border-gray-300"
         >
           <Text>Cancel</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           onPress={handleSubmit}
           className="px-4 py-2 bg-blue-500 rounded-lg"
         >
-          <Text className="text-white">{isEditMode ? 'Update' : 'Save'}</Text>
+          <Text className="text-white">{isEditMode ? "Update" : "Save"}</Text>
         </TouchableOpacity>
       </View>
     </View>

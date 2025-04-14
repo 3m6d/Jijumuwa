@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { Appointment, AppointmentFormData } from "../types/caretaker";
+import { Appointment } from "../types/caretaker";
 import { appointmentService } from "../services/caretaker/appoinmentService";
 
 // Key for storing data in SecureStore
@@ -8,8 +8,13 @@ const APPOINTMENTS_STORAGE_KEY = "caretaker_appointments";
 
 interface AppointmentContextType {
   appointments: Appointment[];
-  addAppointment: (data: AppointmentFormData) => Promise<void>;
-  updateAppointment: (id: number, data: AppointmentFormData) => Promise<void>;
+  addAppointment: (
+    data: Pick<
+      Appointment,
+      "doctor_name" | "specialty" | "appointment_time" | "location"
+    >
+  ) => Promise<void>;
+  updateAppointment: (id: number, data: Appointment) => Promise<void>;
   deleteAppointment: (id: number) => Promise<void>;
   isLoading: boolean;
 }
@@ -40,7 +45,7 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           if (storedAppointments) {
             setAppointments(JSON.parse(storedAppointments));
-          } 
+          }
         } catch (storageError) {
           console.error(
             "Error loading appointments from storage:",
@@ -74,17 +79,20 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [appointments, isLoading]);
 
-  const addAppointment = async (data: AppointmentFormData): Promise<void> => {
+  const addAppointment = async (
+    data: Pick<
+      Appointment,
+      "doctor_name" | "specialty" | "appointment_time" | "location"
+    >
+  ): Promise<void> => {
     try {
-      console.log("Creating appointment with data:", JSON.stringify(data, null, 2));
-      const newAppointment = await appointmentService.createAppointment({
-        doctor_name: data.doctor_name,
-        specialty: data.specialty,
-        location: data.location,
-        appointment_time: new Date(`${data.date}T${data.time}`).toISOString()
-      });
+      console.log(
+        "Creating appointment with data:",
+        JSON.stringify(data, null, 2)
+      );
+      const newAppointment = await appointmentService.createAppointment(data);
       console.log("Appointment created successfully:", newAppointment);
-      setAppointments(prev => [...prev, newAppointment]);
+      setAppointments((prev) => [...prev, newAppointment]);
       // Don't return anything - just void
     } catch (error: any) {
       const errorMessage = error.message || "Failed to create appointment";
@@ -92,9 +100,8 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({
       throw new Error(errorMessage);
     }
   };
-  
 
-  const updateAppointment = async (id: number, data: AppointmentFormData) => {
+  const updateAppointment = async (id: number, data: Appointment) => {
     try {
       const updatedAppointment = await appointmentService.updateAppointment(
         id,

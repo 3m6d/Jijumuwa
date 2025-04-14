@@ -1,4 +1,4 @@
-export type SectionType = 'medications' | 'appointments' | 'contacts';
+export type SectionType = "medications" | "appointments" | "contacts";
 
 export interface Medication {
   id: string;
@@ -12,8 +12,7 @@ export interface Appointment {
   id: number;
   doctor_name: string;
   specialty: string;
-  date: string;  
-  time: string;
+  appointment_time: string;
   location: string;
 }
 
@@ -30,21 +29,6 @@ export interface MedicationFormData {
   dosage: string;
   schedule: string;
   notes: string;
-}
-
-export interface AppointmentFormData {
-  doctor_name: string;
-  specialty: string;
-  date: string;
-  time: string;
-  location: string;
-}
-
-export interface AppointmentDTO {
-  doctor_name: string;
-  specialty: string;
-  appointment_time: string;
-  location: string;
 }
 
 export interface ContactFormData {
