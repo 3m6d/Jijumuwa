@@ -24,7 +24,7 @@ export const AppointmentTab: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     deleteAppointment(id);
   };
 

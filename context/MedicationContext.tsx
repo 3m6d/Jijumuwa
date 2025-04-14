@@ -27,13 +27,9 @@ export const MedicationsProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const storedMedications = await SecureStore.getItemAsync(MEDICATIONS_STORAGE_KEY);
         if (storedMedications) {
           setMedications(JSON.parse(storedMedications));
-        } else {
-          // Use initial data if nothing is stored
-          setMedications(initialMedications);
         }
       } catch (error) {
         console.error('Error loading medications from storage:', error);
-        setMedications(initialMedications);
       } finally {
         setIsLoading(false);
       }

@@ -12,7 +12,8 @@ export interface Appointment {
   id: number;
   doctor_name: string;
   specialty: string;
-  appointment_time: string;  time: string;
+  date: string;  
+  time: string;
   location: string;
 }
 

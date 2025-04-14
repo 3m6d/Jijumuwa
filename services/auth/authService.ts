@@ -14,8 +14,9 @@ import * as SecureStore from 'expo-secure-store';
 import { Alert } from 'react-native';
 import { apiClient } from '../caretaker/api';
 
-// API server URL - Update this to match your server's address and port
-const API_URL = 'https://192.168.1.92:8000';
+
+import {globalConfig} from '../../global-config'
+const API_URL = globalConfig.api.baseUrl
 
 // SecureStore keys for storing auth data securely on the device
 const ACCESS_TOKEN_KEY = 'access_token';

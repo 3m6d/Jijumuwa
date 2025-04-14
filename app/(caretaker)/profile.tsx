@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { clearAuthData } from '@/services/auth/authService';
+import * as SecureStore from 'expo-secure-store';
+import { useRouter } from 'expo-router';
 
 // Components for profile sections
 const ProfileSection = ({ title, children }: { title: string, children: React.ReactNode }) => (
@@ -25,9 +27,8 @@ const ProfileItem = ({ icon, label, value }: { icon: string, label: string, valu
 );
 
 export default function ProfileScreen() {
-  const { signOut, authState } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
-  const user = authState.user;
+  const router = useRouter();
 
   const handleLogout = async () => {
     Alert.alert(
@@ -41,7 +42,8 @@ export default function ProfileScreen() {
           onPress: async () => {
             setLoading(true);
             try {
-              await signOut();
+              await clearAuthData();
+              router.push("/(tabs)/login")
               // Navigation is handled in AuthContext
             } catch (error) {
               console.error('Logout error:', error);
@@ -73,18 +75,18 @@ export default function ProfileScreen() {
         </View>
         
         {/* Profile Avatar - Simplified */}
-        <View style={styles.avatarContainer}>
+        {/* <View style={styles.avatarContainer}>
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarPlaceholderText}>
-              {user?.name ? user.name.substring(0, 2).toUpperCase() : 'CT'}
+              {SecureStore.getItem*?.name ? user.name.substring(0, 2).toUpperCase() : 'CT'}
             </Text>
           </View>
           <Text style={styles.userName}>{user?.name || 'Caretaker'}</Text>
           <Text style={styles.userRole}>{user?.role || 'Healthcare Professional'}</Text>
-        </View>
+        </View> */}
 
         {/* Personal Information */}
-        <ProfileSection title="Personal Information">
+        {/* <ProfileSection title="Personal Information">
           <ProfileItem 
             icon="person-outline" 
             label="Name" 
@@ -95,7 +97,7 @@ export default function ProfileScreen() {
             label="Phone" 
             value={user?.phone_number || 'Not provided'} 
           />
-        </ProfileSection>
+        </ProfileSection> */}
 
         {/* Logout Button */}
         <TouchableOpacity

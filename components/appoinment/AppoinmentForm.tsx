@@ -16,7 +16,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
   isEditMode = false 
 }) => {
   const [formData, setFormData] = useState<AppointmentFormData>(initialData || {
-    doctor: '',
+    doctor_name: '',
     specialty: '',
     date: '',
     time: '',
@@ -32,7 +32,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
   const validateForm = (): boolean => {
     // Validate Doctor's Name
-    if (!formData.doctor.trim()) {
+    if (!formData.doctor_name.trim()) {
       Alert.alert('Validation Error', 'Doctor Name is required.');
       return false;
     }
@@ -71,8 +71,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       <TextInput
         className="border border-gray-300 rounded-lg p-2 mb-3"
         placeholder="Doctor Name"
-        value={formData.doctor}
-        onChangeText={(text) => handleChange('doctor', text)}
+        value={formData.doctor_name}
+        onChangeText={(text) => handleChange('doctor_name', text)}
       />
       
       <TextInput

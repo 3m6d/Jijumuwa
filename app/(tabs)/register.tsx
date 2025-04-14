@@ -15,6 +15,7 @@ import { Link, useRouter } from 'expo-router';
 import axios, { AxiosError } from 'axios'; 
 import Constants from 'expo-constants';
 import { BackgroundGradient } from '@/components/BackgroundGradient';
+import { globalConfig } from '@/global-config';
 
 export default function RegisterScreen() {
   const [userType, setUserType] = useState<'elderly' | 'caretaker'>('elderly'); 
@@ -103,7 +104,7 @@ export default function RegisterScreen() {
         };
       }
 
-      const apiUrl = `${Constants.expoConfig?.extra?.apiUrl || 'http://192.168.1.105:8000'}/authentication/register/`;
+      const apiUrl = `${globalConfig.api.baseUrl}/authentication/register/`;
       console.log('API URL:', apiUrl);
       console.log('Request Data:', data);
 

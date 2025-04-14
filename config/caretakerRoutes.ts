@@ -9,7 +9,7 @@ export const caretakerRoutes: CaretakerRoutesConfig = {
     hideTabBar: false,
   },
   profile: {
-    name: "two",
+    name: "profile",
     title: "profile",
     icon: "comments",
     headerShown: true,

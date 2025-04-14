@@ -13,6 +13,7 @@ import { MedicationsProvider } from '../../context/MedicationContext';
 import { AppointmentProvider } from '../../context/AppoinmentContext';
 import { ContactsProvider } from '../../context/ContactContext';
 
+
 export default function CaretakerDashboard() {
   const [activeTab, setActiveTab] = useState<SectionType>('medications');
 
@@ -34,9 +35,6 @@ export default function CaretakerDashboard() {
               {activeTab === 'appointments' && <AppointmentTab />}
               {activeTab === 'contacts' && <ContactTab />}
             </ScrollView>
-
-     
-            
           </View>
         </ContactsProvider>
       </AppointmentProvider>
