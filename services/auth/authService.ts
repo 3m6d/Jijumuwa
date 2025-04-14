@@ -15,7 +15,7 @@ import { Alert } from 'react-native';
 import { apiClient } from '../caretaker/api';
 
 // API server URL - Update this to match your server's address and port
-const API_URL = 'http://192.168.1.105:8000';
+const API_URL = 'https://192.168.1.92:8000';
 
 // SecureStore keys for storing auth data securely on the device
 const ACCESS_TOKEN_KEY = 'access_token';

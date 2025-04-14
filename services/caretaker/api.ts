@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { getAccessToken } from '@/services/auth/authService';  
 
-const API_BASE_URL = 'http://192.168.1.105/care'; 
+const API_BASE_URL = 'https://dipawoli.pythonanywhere.com/care'; 
 
 // Create axios instance with common configuration
 export const apiClient = axios.create({

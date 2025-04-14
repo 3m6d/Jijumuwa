@@ -32,10 +32,17 @@ export interface MedicationFormData {
 }
 
 export interface AppointmentFormData {
-  doctor: string;
+  doctor_name: string;
   specialty: string;
   date: string;
   time: string;
+  location: string;
+}
+
+export interface AppointmentDTO {
+  doctor_name: string;
+  specialty: string;
+  appointment_time: string;
   location: string;
 }
 

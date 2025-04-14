@@ -1,5 +1,5 @@
 import apiService from './api';
-import { Appointment, AppointmentFormData } from '../../types/caretaker';
+import { Appointment, AppointmentDTO, AppointmentFormData } from '../../types/caretaker';
 
 const APPOINTMENTS_URL = '/doctor-appointments/';
 
@@ -12,7 +12,7 @@ export const appointmentService = {
     return await apiService.get(`${APPOINTMENTS_URL}${id}/`);
   },
   
-  createAppointment: async (appointmentData: AppointmentFormData): Promise<Appointment> => {
+  createAppointment: async (appointmentData: AppointmentDTO): Promise<Appointment> => {
     return await apiService.post(APPOINTMENTS_URL, appointmentData);
   },
   

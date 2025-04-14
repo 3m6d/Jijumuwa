@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import { Appointment, AppointmentFormData } from "../types/caretaker";
-import { initialAppointments } from "../constants/mockCaretakerData";
 import { appointmentService } from "../services/caretaker/appoinmentService";
 
 // Key for storing data in SecureStore
@@ -41,15 +40,12 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           if (storedAppointments) {
             setAppointments(JSON.parse(storedAppointments));
-          } else {
-            setAppointments(initialAppointments);
-          }
+          } 
         } catch (storageError) {
           console.error(
             "Error loading appointments from storage:",
             storageError
           );
-          setAppointments(initialAppointments);
         }
       } finally {
         setIsLoading(false);
@@ -81,7 +77,12 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({
   const addAppointment = async (data: AppointmentFormData): Promise<void> => {
     try {
       console.log("Creating appointment with data:", JSON.stringify(data, null, 2));
-      const newAppointment = await appointmentService.createAppointment(data);
+      const newAppointment = await appointmentService.createAppointment({
+        doctor_name: data.doctor_name,
+        specialty: data.specialty,
+        location: data.location,
+        appointment_time: new Date(`${data.date}T${data.time}`).toISOString()
+      });
       console.log("Appointment created successfully:", newAppointment);
       setAppointments(prev => [...prev, newAppointment]);
       // Don't return anything - just void
