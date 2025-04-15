@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useContacts } from '../../context/ContactContext';
-import { Contact, ContactFormData } from '../../types/caretaker';
+import { Contact } from '../../types/caretaker';
 import ContactForm from './ContactForm';
 import { ItemCard } from '../ItemCard';
 
 export const ContactTab: React.FC = () => {
-  const { contacts, addContact, updateContact, deleteContact } = useContacts();
+  const { contacts, addContact, updateContact, deleteContact, isLoading } = useContacts();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentContact, setCurrentContact] = useState<Contact | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -24,18 +24,34 @@ export const ContactTab: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteContact(id);
+  const handleDelete = (id: number) => {
+    if (id) {
+      deleteContact(id);
+    }
   };
 
-  const handleSubmit = (data: ContactFormData) => {
-    if (isEditMode && currentContact) {
-      updateContact(currentContact.id, data);
+  const handleSubmit = (data: Contact | Pick<Contact, "name" | "relationship" | "phone_number" | "email">) => {
+    console.log('ContactTab - Data received from form:', data);
+    console.log('ContactTab - Is edit mode:', isEditMode);
+    console.log('ContactTab - Current contact:', currentContact);
+
+    if (isEditMode && currentContact?.id) {
+      console.log('ContactTab - Updating contact:', currentContact.id, data);
+      updateContact(currentContact.id, data as Contact);
     } else {
-      addContact(data);
+      console.log('ContactTab - Creating new contact:', data);
+      addContact(data as Pick<Contact, "name" | "relationship" | "phone_number" | "email">);
     }
     setIsModalVisible(false);
   };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-gray-600">Loading contacts...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1">
@@ -57,7 +73,7 @@ export const ContactTab: React.FC = () => {
               item={contact}
               section="contacts"
               onEdit={() => handleEdit(contact)}
-              onDelete={() => handleDelete(contact.id)}
+              onDelete={() => contact.id && handleDelete(contact.id)}
             />
           ))
         ) : (

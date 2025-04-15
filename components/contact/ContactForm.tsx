@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ContactFormData } from '../../types/caretaker';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Contact } from '../../types/caretaker';
 
 interface ContactFormProps {
-  initialData?: ContactFormData;
-  onSubmit: (data: ContactFormData) => void;
+  initialData?: Contact;
+  onSubmit: (data: Contact | Pick<Contact, "name" | "relationship" | "phone_number" | "email">) => void;
   onCancel: () => void;
   isEditMode?: boolean;
 }
@@ -16,57 +15,53 @@ const ContactForm: React.FC<ContactFormProps> = ({
   onCancel, 
   isEditMode = false 
 }) => {
-  const [formData, setFormData] = useState<ContactFormData>(
-    initialData || {
-      name: '',
-      relationship: '',
-      phone: '',
-      isEmergency: false,
-    }
-  );
+  const [errors, setErrors] = useState<Partial<Record<keyof Contact, string>>>({});
+  const [formData, setFormData] = useState<Partial<Contact>>({
+    name: initialData?.name || '',
+    relationship: initialData?.relationship || '',
+    phone_number: initialData?.phone_number || '',
+    email: initialData?.email || '',
+  });
 
-  const handleChange = (field: keyof ContactFormData, value: string | boolean) => {
-    setFormData({
-      ...formData,
-      [field]: value,
-    });
-  };
+  const validateField = (field: keyof Contact, value: string) => {
+    let errorMessage = '';
 
-  const validateForm = (): boolean => {
-    // Validate name: must not be empty
-    if (!formData.name.trim()) {
-      Alert.alert('Validation Error', 'Contact name is required.');
-      return false;
+    if (field === 'name' && !value.trim()) {
+      errorMessage = 'Name is required.';
+    } else if (field === 'phone_number' && !value.trim()) {
+      errorMessage = 'Phone number is required.';
+    } else if (field === 'phone_number' && !/^\d+$/.test(value)) {
+      errorMessage = 'Phone number must contain only digits.';
+    } else if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      errorMessage = 'Please enter a valid email address.';
     }
 
-    // Validate phone number: must not be empty and should contain only digits.
-    if (!formData.phone.trim()) {
-      Alert.alert('Validation Error', 'Phone number is required.');
-      return false;
-    }
-
-    const phoneRegex = /^\d+$/; // Allows only digits; adjust if needed for your format
-    if (!phoneRegex.test(formData.phone)) {
-      Alert.alert('Validation Error', 'Phone number must contain only digits.');
-      return false;
-    }
-    
-    // Optionally: enforce a specific length, e.g., 10 digits
-    if (formData.phone.length !== 10) {
-      Alert.alert('Validation Error', 'Phone number must be exactly 10 digits.');
-      return false;
-    }
-    
-    // You can add validations for relationship if desired.
-
-    return true;
+    setErrors(prev => ({ ...prev, [field]: errorMessage }));
   };
 
   const handleSubmit = () => {
-    if (!validateForm()) {
-      return;
+    // Validate all required fields
+    const requiredFields: (keyof Contact)[] = ['name', 'phone_number'];
+    let hasErrors = false;
+
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        validateField(field, '');
+        hasErrors = true;
+      }
+    });
+
+    if (hasErrors) return;
+
+    console.log('Form data being submitted:', formData);
+    console.log('Is edit mode:', isEditMode);
+    console.log('Initial data:', initialData);
+
+    if (isEditMode && initialData) {
+      onSubmit({ ...formData, id: initialData.id } as Contact);
+    } else {
+      onSubmit(formData as Pick<Contact, "name" | "relationship" | "phone_number" | "email">);
     }
-    onSubmit(formData);
   };
 
   return (
@@ -74,40 +69,49 @@ const ContactForm: React.FC<ContactFormProps> = ({
       <Text className="text-lg font-semibold mb-2">Contact Details</Text>
       
       <TextInput
-        className="border border-gray-300 rounded-lg p-2 mb-3"
-        placeholder="Contact Name"
+        className="border border-gray-300 rounded-lg p-2 mb-1"
+        placeholder="Name"
         value={formData.name}
-        onChangeText={(text) => handleChange('name', text)}
+        onChangeText={(text) => {
+          setFormData({ ...formData, name: text });
+          validateField('name', text);
+        }}
+        onBlur={() => validateField('name', formData.name || '')}
       />
+      {errors.name ? <Text className="text-red-500 mb-3">{errors.name}</Text> : null}
       
       <TextInput
-        className="border border-gray-300 rounded-lg p-2 mb-3"
+        className="border border-gray-300 rounded-lg p-2 mb-1"
         placeholder="Relationship (optional)"
         value={formData.relationship}
-        onChangeText={(text) => handleChange('relationship', text)}
+        onChangeText={(text) => setFormData({ ...formData, relationship: text })}
       />
       
       <TextInput
-        className="border border-gray-300 rounded-lg p-2 mb-3"
+        className="border border-gray-300 rounded-lg p-2 mb-1"
         placeholder="Phone Number"
-        value={formData.phone}
-        onChangeText={(text) => handleChange('phone', text)}
+        value={formData.phone_number}
+        onChangeText={(text) => {
+          setFormData({ ...formData, phone_number: text });
+          validateField('phone_number', text);
+        }}
+        onBlur={() => validateField('phone_number', formData.phone_number || '')}
         keyboardType="phone-pad"
       />
+      {errors.phone_number ? <Text className="text-red-500 mb-3">{errors.phone_number}</Text> : null}
       
-      <View className="flex-row items-center mb-4">
-        <TouchableOpacity
-          onPress={() => handleChange('isEmergency', !formData.isEmergency)}
-          className="flex-row items-center"
-        >
-          <View className={`w-6 h-6 border border-gray-400 rounded mr-2 ${formData.isEmergency ? 'bg-blue-500' : 'bg-white'}`}>
-            {formData.isEmergency && (
-              <Ionicons name="checkmark" size={20} color="white" />
-            )}
-          </View>
-          <Text>Emergency Contact</Text>
-        </TouchableOpacity>
-      </View>
+      <TextInput
+        className="border border-gray-300 rounded-lg p-2 mb-1"
+        placeholder="Email (optional)"
+        value={formData.email}
+        onChangeText={(text) => {
+          setFormData({ ...formData, email: text });
+          validateField('email', text);
+        }}
+        onBlur={() => validateField('email', formData.email || '')}
+        keyboardType="email-address"
+      />
+      {errors.email ? <Text className="text-red-500 mb-3">{errors.email}</Text> : null}
 
       <View className="flex-row justify-end mt-4">
         <TouchableOpacity 

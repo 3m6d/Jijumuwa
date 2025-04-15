@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SectionType } from '../../types/caretaker';
 import { DashboardHeader } from '../../components/CaretakerDasHeader';
 import { TabNavigation } from '../../components/navigation/CaretakerTabNavigation';
-import { MedicationsTab } from '../../components/medications/MedicationTab';
+import { MedicationTab } from '../../components/medications/MedicationTab';
 import { AppointmentTab } from '../../components/appoinment/AppoinmentTab';
 import { ContactTab } from '../../components/contact/ContactTab';
 
@@ -31,7 +31,7 @@ export default function CaretakerDashboard() {
             {/* Content Area */}
             <ScrollView className="flex-1 px-4 pt-4">
               {/* Tabs */}
-              {activeTab === 'medications' && <MedicationsTab />}
+              {activeTab === 'medications' && <MedicationTab />}
               {activeTab === 'appointments' && <AppointmentTab />}
               {activeTab === 'contacts' && <ContactTab />}
             </ScrollView>

@@ -1,17 +1,16 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { Medication, MedicationFormData } from '../types/caretaker';
+import { Medication } from '../types/caretaker';
 import { medicationService } from '../services/caretaker/medicationService';
-// import { initialMedications } from '../constants/mockCaretakerData';
 
 // Key for storing data in SecureStore
 const MEDICATIONS_STORAGE_KEY = 'caretaker_medications';
 
 interface MedicationsContextType {
   medications: Medication[];
-  addMedication: (data: MedicationFormData) => Promise<void>;
-  updateMedication: (id: string, data: MedicationFormData) => Promise<void>;
-  deleteMedication: (id: string) => Promise<void>;
+  addMedication: (data: Pick<Medication, "medication_name" | "dosage" | "frequency" | "appropriate" | "duration" | "remarks">) => Promise<void>;
+  updateMedication: (id: number, data: Medication) => Promise<void>;
+  deleteMedication: (id: number) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -21,21 +20,21 @@ export const MedicationsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [medications, setMedications] = useState<Medication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load medications from SecureStore when component mounts
   useEffect(() => {
+    const loadMedications = async () => {
+      try {
+        const data = await medicationService.getAllMedications();
+        setMedications(data);
+      } catch (error) {
+        console.error('Error loading medications:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadMedications();
   }, []);
-
-  const loadMedications = async () => {
-    try {
-      setIsLoading(true);
-      const data = await medicationService.getAllMedications();
-      setMedications(data);
-    } catch (error) {
-      console.error('Error loading medications:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Save medications to SecureStore whenever they change
   useEffect(() => {
@@ -56,9 +55,9 @@ export const MedicationsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [medications, isLoading]);
 
-  const addMedication = async (data: MedicationFormData) => {
+  const addMedication = async (data: Pick<Medication, "medication_name" | "dosage" | "frequency" | "appropriate" | "duration" | "remarks">) => {
     try {
-      const newMedication = await medicationService.createMedication(data);
+      const newMedication = await medicationService.createMedication(data as Medication);
       setMedications(prev => [...prev, newMedication]);
     } catch (error) {
       console.error('Error adding medication:', error);
@@ -66,7 +65,7 @@ export const MedicationsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
-  const updateMedication = async (id: string, data: MedicationFormData) => {
+  const updateMedication = async (id: number, data: Medication) => {
     try {
       const updatedMedication = await medicationService.updateMedication(id, data);
       setMedications(prev => prev.map(item => 
@@ -78,7 +77,7 @@ export const MedicationsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
-  const deleteMedication = async (id: string) => {
+  const deleteMedication = async (id: number) => {
     try {
       await medicationService.deleteMedication(id);
       setMedications(prev => prev.filter(item => item.id !== id));

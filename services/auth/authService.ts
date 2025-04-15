@@ -13,6 +13,9 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 const USER_ROLE_KEY = "user_role";
 const USER_DATA_KEY = "user_data";
 const ELDERLY_ID_KEY = "elderly_id";
+const ELDERLY_NAME_KEY = "elderly_name";
+const CARETAKER_ID_KEY = "caretaker_id";
+const CARETAKER_NAME_KEY = "caretaker_name";
 
 /**
  * Interface for user data structure

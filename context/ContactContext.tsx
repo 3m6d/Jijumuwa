@@ -1,16 +1,16 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { Contact, ContactFormData } from '../types/caretaker';
-import { initialContacts } from '../constants/mockCaretakerData';
+import { Contact } from '../types/caretaker';
+import { contactService } from '../services/caretaker/contactService';
 
 // Key for storing data in SecureStore
 const CONTACTS_STORAGE_KEY = 'caretaker_contacts';
 
 interface ContactsContextType {
   contacts: Contact[];
-  addContact: (data: ContactFormData) => void;
-  updateContact: (id: string, data: ContactFormData) => void;
-  deleteContact: (id: string) => void;
+  addContact: (data: Pick<Contact, "name" | "relationship" | "phone_number" | "email">) => Promise<void>;
+  updateContact: (id: number, data: Contact) => Promise<void>;
+  deleteContact: (id: number) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -24,16 +24,10 @@ export const ContactsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const loadContacts = async () => {
       try {
-        const storedContacts = await SecureStore.getItemAsync(CONTACTS_STORAGE_KEY);
-        if (storedContacts) {
-          setContacts(JSON.parse(storedContacts));
-        } else {
-          // Use initial data if nothing is stored
-          setContacts(initialContacts);
-        }
+        const data = await contactService.getAllContacts();
+        setContacts(data);
       } catch (error) {
-        console.error('Error loading contacts from storage:', error);
-        setContacts(initialContacts);
+        console.error('Error loading contacts:', error);
       } finally {
         setIsLoading(false);
       }
@@ -61,19 +55,36 @@ export const ContactsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [contacts, isLoading]);
 
-  const addContact = (data: ContactFormData) => {
-    const newId = Math.random().toString(36).substring(7);
-    setContacts([...contacts, { ...data, id: newId }]);
+  const addContact = async (data: Pick<Contact, "name" | "relationship" | "phone_number" | "email">) => {
+    try {
+      const newContact = await contactService.createContact(data);
+      setContacts(prev => [...prev, newContact]);
+    } catch (error) {
+      console.error('Error adding contact:', error);
+      throw error;
+    }
   };
 
-  const updateContact = (id: string, data: ContactFormData) => {
-    setContacts(contacts.map(item => 
-      item.id === id ? { ...data, id } : item
-    ));
+  const updateContact = async (id: number, data: Contact) => {
+    try {
+      const updatedContact = await contactService.updateContact(id, data);
+      setContacts(prev => prev.map(item => 
+        item.id === id ? updatedContact : item
+      ));
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      throw error;
+    }
   };
 
-  const deleteContact = (id: string) => {
-    setContacts(contacts.filter(item => item.id !== id));
+  const deleteContact = async (id: number) => {
+    try {
+      await contactService.deleteContact(id);
+      setContacts(prev => prev.filter(item => item.id !== id));
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      throw error;
+    }
   };
 
   return (

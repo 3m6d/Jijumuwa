@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { clearAuthData } from '@/services/auth/authService';
+import { clearAuthData, getUserData } from '@/services/auth/authService';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
+import { apiClient } from '@/services/caretaker/api';
 
 // Components for profile sections
 const ProfileSection = ({ title, children }: { title: string, children: React.ReactNode }) => (
@@ -26,9 +27,39 @@ const ProfileItem = ({ icon, label, value }: { icon: string, label: string, valu
   </View>
 );
 
+interface CaretakerData {
+  name: string;
+  phone_number: string;
+}
+
 export default function ProfileScreen() {
   const [loading, setLoading] = useState<boolean>(false);
+  const [caretakerData, setCaretakerData] = useState<CaretakerData | null>(null);
+  const [fetching, setFetching] = useState<boolean>(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setFetching(true);
+        const userData = await getUserData();
+        
+        if (userData) {
+          setCaretakerData({
+            name: userData.name || 'Caretaker',
+            phone_number: userData.phone_number || 'Not provided'
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+        Alert.alert('Error', 'Failed to load profile data. Please try again.');
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   const handleLogout = async () => {
     Alert.alert(
@@ -44,7 +75,6 @@ export default function ProfileScreen() {
             try {
               await clearAuthData();
               router.push("/(tabs)/login")
-              // Navigation is handled in AuthContext
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert('Logout Failed', 'Unable to log out. Please try again.');
@@ -57,11 +87,11 @@ export default function ProfileScreen() {
     );
   };
 
-  if (loading) {
+  if (loading || fetching) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4A80F0" />
-        <Text style={styles.loadingText}>Logging out...</Text>
+        <Text style={styles.loadingText}>{loading ? 'Logging out...' : 'Loading profile...'}</Text>
       </View>
     );
   }
@@ -71,33 +101,40 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#4A80F0" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Profile</Text>
         </View>
         
-        {/* Profile Avatar - Simplified */}
-        {/* <View style={styles.avatarContainer}>
+        {/* Profile Avatar */}
+        <View style={styles.avatarContainer}>
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarPlaceholderText}>
-              {SecureStore.getItem*?.name ? user.name.substring(0, 2).toUpperCase() : 'CT'}
+              {caretakerData?.name ? caretakerData.name.substring(0, 2).toUpperCase() : 'CT'}
             </Text>
           </View>
-          <Text style={styles.userName}>{user?.name || 'Caretaker'}</Text>
-          <Text style={styles.userRole}>{user?.role || 'Healthcare Professional'}</Text>
-        </View> */}
+          <Text style={styles.userName}>{caretakerData?.name || 'Caretaker'}</Text>
+          <Text style={styles.userRole}>Healthcare Professional</Text>
+        </View>
 
         {/* Personal Information */}
-        {/* <ProfileSection title="Personal Information">
+        <ProfileSection title="Personal Information">
           <ProfileItem 
             icon="person-outline" 
             label="Name" 
-            value={user?.name || 'Not provided'} 
+            value={caretakerData?.name || 'Not provided'} 
           />
           <ProfileItem 
             icon="call-outline" 
             label="Phone" 
-            value={user?.phone_number || 'Not provided'} 
+            value={caretakerData?.phone_number || 'Not provided'} 
           />
-        </ProfileSection> */}
+        </ProfileSection>
 
         {/* Logout Button */}
         <TouchableOpacity
@@ -138,6 +175,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
     backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 10,
+    padding: 4,
   },
   headerTitle: {
     fontSize: 20,

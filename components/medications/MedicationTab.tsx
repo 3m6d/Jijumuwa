@@ -1,61 +1,42 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMedications } from '../../context/MedicationContext';
-import { MedicationForm } from './MedicationForm';
+import { Medication } from '../../types/caretaker';
+import MedicationForm from './MedicationForm';
 import { ItemCard } from '../ItemCard';
-import { MedicationFormData } from '../../types/caretaker';
 
-export const MedicationsTab: React.FC = () => {
+export const MedicationTab: React.FC = () => {
   const { medications, addMedication, updateMedication, deleteMedication, isLoading } = useMedications();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentMedication, setCurrentMedication] = useState<Medication | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [currentItemId, setCurrentItemId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<MedicationFormData>({
-    medication_name: '',
-    dosage: '',
-    frequency: '',
-    appropriate: 'Before Food',
-    duration: '',
-    remarks: ''
-  });
 
-  const openAddModal = () => {
+  const handleAddNew = () => {
+    setCurrentMedication(null);
     setIsEditMode(false);
-    setFormData({
-      medication_name: '',
-      dosage: '',
-      frequency: '',
-      appropriate: 'Before Food',
-      duration: '',
-      remarks: ''
-    });
     setIsModalVisible(true);
   };
 
-  const openEditModal = (id: string) => {
-    const medication = medications.find(item => item.id === id);
-    if (medication) {
-      setFormData({
-        id: parseInt(id),
-        medication_name: medication.medication_name,
-        dosage: medication.dosage,
-        frequency: medication.frequency,
-        appropriate: medication.appropriate,
-        duration: medication.duration,
-        remarks: medication.remarks
-      });
-      setCurrentItemId(id);
-      setIsEditMode(true);
-      setIsModalVisible(true);
-    }
+  const handleEdit = (medication: Medication) => {
+    setCurrentMedication(medication);
+    setIsEditMode(true);
+    setIsModalVisible(true);
   };
 
-  const handleSave = () => {
-    if (isEditMode && currentItemId) {
-      updateMedication(currentItemId, formData);
+  const handleDelete = (id: number) => {
+    deleteMedication(id);
+  };
+
+  const handleSubmit = (
+    data: Medication | Pick<Medication, "medication_name" | "dosage" | "frequency" | "appropriate" | "duration" | "remarks">
+  ) => {
+    if (isEditMode && currentMedication) {
+      updateMedication(currentMedication.id, data as Medication);
     } else {
-      addMedication(formData);
+      addMedication(
+        data as Pick<Medication, "medication_name" | "dosage" | "frequency" | "appropriate" | "duration" | "remarks">
+      );
     }
     setIsModalVisible(false);
   };
@@ -63,63 +44,59 @@ export const MedicationsTab: React.FC = () => {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text className="mt-2 text-gray-600">Loading medications...</Text>
+        <Text className="text-gray-600">Loading medications...</Text>
       </View>
     );
   }
 
   return (
-    <View>
+    <View className="flex-1">
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-xl font-bold text-gray-800">Medications</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-blue-500 p-2 rounded-full"
-          onPress={openAddModal}
+          onPress={handleAddNew}
         >
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
-      
-      {medications.map(item => (
-        <ItemCard 
-          key={item.id}
-          item={item}
-          section="medications"
-          onEdit={() => openEditModal(item.id)}
-          onDelete={() => deleteMedication(item.id)}
-        />
-      ))}
-      
-      {medications.length === 0 && (
-        <Text className="text-gray-500 text-center py-6">No medications added yet.</Text>
-      )}
 
-      {/* Add/Edit Modal */}
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <ScrollView className="flex-1">
+        {medications.length > 0 ? (
+          medications.map((medication) => (
+            <ItemCard
+              key={medication.id}
+              item={medication}
+              section="medications"
+              onEdit={() => handleEdit(medication)}
+              onDelete={() => handleDelete(medication.id)}
+            />
+          ))
+        ) : (
+          <Text className="text-gray-500 text-center py-6">
+            No medications added yet.
+          </Text>
+        )}
+      </ScrollView>
+
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View className="flex-1 justify-end bg-black bg-opacity-50">
-          <View className="bg-white rounded-t-lg p-5">
-            <View className="flex-row justify-between items-center mb-4">
+          <View className="bg-white rounded-t-lg">
+            <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
               <Text className="text-xl font-bold">
-                {isEditMode ? 'Edit' : 'Add'} Medication
+                {isEditMode ? "Edit Medication" : "Add New Medication"}
               </Text>
               <TouchableOpacity onPress={() => setIsModalVisible(false)}>
                 <Ionicons name="close" size={24} />
               </TouchableOpacity>
             </View>
-            
-            <MedicationForm formData={formData} setFormData={setFormData} />
-            
-            <TouchableOpacity 
-              className="bg-blue-500 p-4 rounded-lg mt-4"
-              onPress={handleSave}
-            >
-              <Text className="text-white text-center font-bold">Save</Text>
-            </TouchableOpacity>
+
+            <MedicationForm
+              initialData={currentMedication || undefined}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsModalVisible(false)}
+              isEditMode={isEditMode}
+            />
           </View>
         </View>
       </Modal>

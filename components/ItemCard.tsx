@@ -38,13 +38,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
     );
   }
 
-
-  // Implementation for appointments card
-  else if (section === 'appointments') {
+  if (section === 'appointments') {
     const appointment = item as Appointment;
     return (
-      <View className="bg-white p-4 rounded-lg sha
-      dow mb-3">
+      <View className="bg-white p-4 rounded-lg shadow mb-3">
         <View className="flex-row justify-between">
           <Text className="text-lg font-bold">{appointment.doctor_name}</Text>
           <View className="flex-row">
@@ -56,15 +53,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
             </TouchableOpacity>
           </View>
         </View>
-        <Text className="text-gray-600">{appointment.specialty}</Text>
-        <Text className="text-gray-600">{appointment.appointment_time}</Text>
-        <Text className="text-gray-500">{appointment.location}</Text>
+        <Text className="text-gray-600">Specialty: {appointment.specialty}</Text>
+        <Text className="text-gray-600">Time: {appointment.appointment_time}</Text>
+        <Text className="text-gray-600">Location: {appointment.location}</Text>
       </View>
     );
   }
 
-  // Implementation for contacts card
-  else if (section === 'contacts') {
+  if (section === 'contacts') {
     const contact = item as Contact;
     return (
       <View className="bg-white p-4 rounded-lg shadow mb-3">
@@ -79,14 +75,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
             </TouchableOpacity>
           </View>
         </View>
-        <Text className="text-gray-600">{contact.relationship}</Text>
-        <Text className="text-gray-600">{contact.phone}</Text>
-        {contact.isEmergency && (
-          <View className="flex-row items-center mt-1">
-            <Ionicons name="alert-circle" size={16} color="#ef4444" />
-            <Text className="text-red-500 ml-1">Emergency Contact</Text>
-          </View>
-        )}
+        <Text className="text-gray-600">Relationship: {contact.relationship}</Text>
+        <Text className="text-gray-600">Phone: {contact.phone_number}</Text>
+        <Text className="text-gray-600">Email: {contact.email}</Text>
       </View>
     );
   }

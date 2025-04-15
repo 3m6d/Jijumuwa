@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { MedicationFormData } from '../../types/caretaker';
+import { Medication } from '../../types/caretaker';
 
 interface MedicationFormProps {
-  formData: MedicationFormData;
-  setFormData: React.Dispatch<React.SetStateAction<MedicationFormData>>;
+  initialData?: Medication;
+  onSubmit: (data: Medication | Pick<Medication, "medication_name" | "dosage" | "frequency" | "appropriate" | "duration" | "remarks">) => void;
+  onCancel: () => void;
+  isEditMode: boolean;
 }
 
-export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFormData }) => {
-  // Local state to hold validation error messages per field.
-  const [errors, setErrors] = useState<Partial<Record<keyof MedicationFormData, string>>>({});
+const MedicationForm: React.FC<MedicationFormProps> = ({ 
+  initialData, 
+  onSubmit, 
+  onCancel,
+  isEditMode 
+}) => {
+  const [errors, setErrors] = useState<Partial<Record<keyof Medication, string>>>({});
+  const [formData, setFormData] = useState<Partial<Medication>>({
+    medication_name: initialData?.medication_name || '',
+    dosage: initialData?.dosage || '',
+    frequency: initialData?.frequency || '',
+    appropriate: initialData?.appropriate || 'Before Food',
+    duration: initialData?.duration || '',
+    remarks: initialData?.remarks || ''
+  });
 
-  // Helper function to validate a particular field.
-  const validateField = (field: keyof MedicationFormData, value: string) => {
+  const validateField = (field: keyof Medication, value: string) => {
     let errorMessage = '';
 
-    // Validate required fields; adjust logic as needed.
     if (field === 'medication_name' && !value.trim()) {
       errorMessage = 'Medication name is required.';
     } else if (field === 'dosage' && !value.trim()) {
@@ -29,8 +41,25 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFor
     setErrors((prevErrors) => ({ ...prevErrors, [field]: errorMessage }));
   };
 
+  const handleSubmit = () => {
+    // Validate all required fields
+    const requiredFields: (keyof Medication)[] = ['medication_name', 'dosage', 'frequency', 'duration'];
+    let hasErrors = false;
+
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        validateField(field, '');
+        hasErrors = true;
+      }
+    });
+
+    if (hasErrors) return;
+
+    onSubmit(formData as Medication);
+  };
+
   return (
-    <View>
+    <View className="p-4">
       <Text className="text-lg font-semibold mb-2">Medication Details</Text>
 
       <TextInput
@@ -41,7 +70,7 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFor
           setFormData({ ...formData, medication_name: text });
           validateField('medication_name', text);
         }}
-        onBlur={() => validateField('medication_name', formData.medication_name)}
+        onBlur={() => validateField('medication_name', formData.medication_name || '')}
       />
       {errors.medication_name ? <Text className="text-red-500 mb-3">{errors.medication_name}</Text> : null}
 
@@ -53,7 +82,7 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFor
           setFormData({ ...formData, dosage: text });
           validateField('dosage', text);
         }}
-        onBlur={() => validateField('dosage', formData.dosage)}
+        onBlur={() => validateField('dosage', formData.dosage || '')}
       />
       {errors.dosage ? <Text className="text-red-500 mb-3">{errors.dosage}</Text> : null}
 
@@ -65,7 +94,7 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFor
           setFormData({ ...formData, frequency: text });
           validateField('frequency', text);
         }}
-        onBlur={() => validateField('frequency', formData.frequency)}
+        onBlur={() => validateField('frequency', formData.frequency || '')}
       />
       {errors.frequency ? <Text className="text-red-500 mb-3">{errors.frequency}</Text> : null}
 
@@ -96,7 +125,7 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFor
           setFormData({ ...formData, duration: text });
           validateField('duration', text);
         }}
-        onBlur={() => validateField('duration', formData.duration)}
+        onBlur={() => validateField('duration', formData.duration || '')}
       />
       {errors.duration ? <Text className="text-red-500 mb-3">{errors.duration}</Text> : null}
 
@@ -107,6 +136,25 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({ formData, setFor
         onChangeText={(text) => setFormData({ ...formData, remarks: text })}
         multiline
       />
+
+      <View className="flex-row justify-end mt-4">
+        <TouchableOpacity
+          className="bg-gray-200 p-3 rounded-lg mr-2"
+          onPress={onCancel}
+        >
+          <Text>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="bg-blue-500 p-3 rounded-lg"
+          onPress={handleSubmit}
+        >
+          <Text className="text-white font-bold">
+            {isEditMode ? 'Update' : 'Add'} Medication
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
+
+export default MedicationForm;
