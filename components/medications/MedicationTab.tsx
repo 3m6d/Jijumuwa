@@ -12,15 +12,24 @@ export const MedicationsTab: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItemId, setCurrentItemId] = useState<string | null>(null);
   const [formData, setFormData] = useState<MedicationFormData>({
-    name: '',
+    medication_name: '',
     dosage: '',
-    schedule: '',
-    notes: '',
+    frequency: '',
+    appropriate: 'Before Food',
+    duration: '',
+    remarks: ''
   });
 
   const openAddModal = () => {
     setIsEditMode(false);
-    setFormData({ name: '', dosage: '', schedule: '', notes: '' });
+    setFormData({
+      medication_name: '',
+      dosage: '',
+      frequency: '',
+      appropriate: 'Before Food',
+      duration: '',
+      remarks: ''
+    });
     setIsModalVisible(true);
   };
 
@@ -28,10 +37,13 @@ export const MedicationsTab: React.FC = () => {
     const medication = medications.find(item => item.id === id);
     if (medication) {
       setFormData({
-        name: medication.name,
+        id: parseInt(id),
+        medication_name: medication.medication_name,
         dosage: medication.dosage,
-        schedule: medication.schedule,
-        notes: medication.notes,
+        frequency: medication.frequency,
+        appropriate: medication.appropriate,
+        duration: medication.duration,
+        remarks: medication.remarks
       });
       setCurrentItemId(id);
       setIsEditMode(true);

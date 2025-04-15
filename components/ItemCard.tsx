@@ -17,7 +17,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
     return (
       <View className="bg-white p-4 rounded-lg shadow mb-3">
         <View className="flex-row justify-between">
-          <Text className="text-lg font-bold">{medication.name}</Text>
+          <Text className="text-lg font-bold">{medication.medication_name}</Text>
           <View className="flex-row">
             <TouchableOpacity onPress={onEdit} className="mr-2">
               <Ionicons name="create-outline" size={22} color="#4b5563" />
@@ -28,17 +28,23 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
           </View>
         </View>
         <Text className="text-gray-600">Dosage: {medication.dosage}</Text>
-        <Text className="text-gray-600">Schedule: {medication.schedule}</Text>
-        {medication.notes && <Text className="text-gray-500 mt-1">Notes: {medication.notes}</Text>}
+        <Text className="text-gray-600">Frequency: {medication.frequency}</Text>
+        <Text className="text-gray-600">Take: {medication.appropriate}</Text>
+        <Text className="text-gray-600">Duration: {medication.duration}</Text>
+        {medication.remarks && (
+          <Text className="text-gray-600">Remarks: {medication.remarks}</Text>
+        )}
       </View>
     );
   }
+
 
   // Implementation for appointments card
   else if (section === 'appointments') {
     const appointment = item as Appointment;
     return (
-      <View className="bg-white p-4 rounded-lg shadow mb-3">
+      <View className="bg-white p-4 rounded-lg sha
+      dow mb-3">
         <View className="flex-row justify-between">
           <Text className="text-lg font-bold">{appointment.doctor_name}</Text>
           <View className="flex-row">

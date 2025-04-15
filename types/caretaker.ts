@@ -2,10 +2,13 @@ export type SectionType = "medications" | "appointments" | "contacts";
 
 export interface Medication {
   id: string;
-  name: string;
+  elderly: string; // User ID
+  medication_name: string;
   dosage: string;
-  schedule: string;
-  notes: string;
+  frequency: string;
+  appropriate: 'Before Food' | 'After Food';
+  duration: string;
+  remarks?: string;
 }
 
 export interface Appointment {
@@ -25,10 +28,13 @@ export interface Contact {
 }
 
 export interface MedicationFormData {
-  name: string;
+  id?: number;
+  medication_name: string;
   dosage: string;
-  schedule: string;
-  notes: string;
+  frequency: string;
+  appropriate: 'Before Food' | 'After Food';
+  duration: string;
+  remarks?: string;
 }
 
 export interface ContactFormData {
