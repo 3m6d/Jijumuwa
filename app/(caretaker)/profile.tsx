@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { clearAuthData, getUserData } from '@/services/auth/authService';
-import * as SecureStore from 'expo-secure-store';
+import { clearAuthData, getUserData, getUserRole } from '@/services/auth/authService';
 import { useRouter } from 'expo-router';
-import { apiClient } from '@/services/caretaker/api';
 
 // Components for profile sections
 const ProfileSection = ({ title, children }: { title: string, children: React.ReactNode }) => (
@@ -36,19 +34,27 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [caretakerData, setCaretakerData] = useState<CaretakerData | null>(null);
   const [fetching, setFetching] = useState<boolean>(true);
+  const [userRole, setUserRole] = useState<string>('Not provided');
   const router = useRouter();
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setFetching(true);
-        const userData = await getUserData();
+        const [userData, role] = await Promise.all([
+          getUserData(),
+          getUserRole()
+        ]);
         
         if (userData) {
           setCaretakerData({
             name: userData.name || 'Caretaker',
             phone_number: userData.phone_number || 'Not provided'
           });
+        }
+        
+        if (role) {
+          setUserRole(role);
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -119,7 +125,7 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <Text style={styles.userName}>{caretakerData?.name || 'Caretaker'}</Text>
-          <Text style={styles.userRole}>Healthcare Professional</Text>
+          <Text style={styles.userRole}>{userRole}</Text>
         </View>
 
         {/* Personal Information */}

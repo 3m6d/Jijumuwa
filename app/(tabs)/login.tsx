@@ -181,11 +181,11 @@ export default function LoginScreen() {
         </View>
         
         {/* Forgotten password - commented out for now */}
-        {/* <TouchableOpacity className="items-center mt-4">
+        <TouchableOpacity className="items-center mt-4">
           <Link href="/forgot-password" asChild>
             <Text className="text-base text-gray-500">Forgot Password?</Text>
           </Link>
-        </TouchableOpacity> */}
+        </TouchableOpacity> 
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

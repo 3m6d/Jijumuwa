@@ -12,6 +12,7 @@ export type TabRoutesConfig = {
   index: TabScreenConfig;
   register: TabScreenConfig;
   login: TabScreenConfig;
+  // forgot-password : TabScreenConfig;
 };
 
 // Create a proper type for the elderly route configuration

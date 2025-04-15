@@ -13,9 +13,7 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 const USER_ROLE_KEY = "user_role";
 const USER_DATA_KEY = "user_data";
 const ELDERLY_ID_KEY = "elderly_id";
-const ELDERLY_NAME_KEY = "elderly_name";
-const CARETAKER_ID_KEY = "caretaker_id";
-const CARETAKER_NAME_KEY = "caretaker_name";
+
 
 /**
  * Interface for user data structure
@@ -64,6 +62,7 @@ interface APIRequestResponse {
 export const storeAuthData = async (
   access: string,
   refresh: string,
+  userData: { name: string; phone_number: string },
   name: string,
   role: string,
   elderlyId?: string
@@ -75,7 +74,7 @@ export const storeAuthData = async (
     await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, access);
     await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refresh);
     await SecureStore.setItemAsync(USER_ROLE_KEY, role);
-    await SecureStore.setItemAsync(USER_DATA_KEY, name);
+    await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(userData));
     if (elderlyId) {
       await SecureStore.setItemAsync(ELDERLY_ID_KEY, elderlyId);
     }
@@ -121,12 +120,14 @@ export const getUserRole = async (): Promise<string | null> => {
   }
 };
 
-export const getUserData = async (): Promise<UserData | null> => {
+export const getUserData = async (): Promise<{ name: string; phone_number: string } | null> => {
   try {
     const userDataStr = await SecureStore.getItemAsync(USER_DATA_KEY);
-    const parsedData = userDataStr ? JSON.parse(userDataStr) : null;
-    console.log("[getUserData] Retrieved user data:", parsedData);
-    return parsedData;
+    if (!userDataStr) return null;
+    
+    const userData = JSON.parse(userDataStr);
+    console.log("[getUserData] Retrieved user data:", userData);
+    return userData;
   } catch (error: any) {
     console.error("[getUserData] Error getting user data:", error);
     return null;
@@ -195,21 +196,12 @@ export const login = async (
       };
     }
 
-    // // Verify required data is present
-    // if (!data.access || !data.refresh || !data.name || !data.role) {
-    //   console.error('[login] Incomplete data in successful response:', data);
-    //   return {
-    //     success: false,
-    //     error: 'Server returned incomplete data. Please try again.'
-    //   };
-    // }
-
     // Extract tokens and user data
-    const { access, refresh, name, role ,elderlyId} = data;
+    const { access, refresh, name, role, elderlyId } = data;
     console.log("[login] Login successful for user role:", role);
 
     // Store authentication data securely
-    await storeAuthData(access, refresh, name, role, elderlyId);
+    await storeAuthData(access, refresh, { name, phone_number: phoneNumber }, name, role, elderlyId);
 
     return {
       success: true,
