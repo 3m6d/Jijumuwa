@@ -40,7 +40,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
     return (
       <View className="bg-white p-4 rounded-lg shadow mb-3">
         <View className="flex-row justify-between">
-          <Text className="text-lg font-bold">{appointment.doctor}</Text>
+          <Text className="text-lg font-bold">{appointment.doctor_name}</Text>
           <View className="flex-row">
             <TouchableOpacity onPress={onEdit} className="mr-2">
               <Ionicons name="create-outline" size={22} color="#4b5563" />
@@ -51,7 +51,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, section, onEdit, onDel
           </View>
         </View>
         <Text className="text-gray-600">{appointment.specialty}</Text>
-        <Text className="text-gray-600">{appointment.date} at {appointment.time}</Text>
+        <Text className="text-gray-600">{appointment.appointment_time}</Text>
         <Text className="text-gray-500">{appointment.location}</Text>
       </View>
     );
