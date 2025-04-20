@@ -113,16 +113,40 @@ export default function RegisterScreen() {
         router.push('/login');
       }
     } catch (error: any) {
+      // Log the full error to console for debugging
+      if (error instanceof Error) {
+        console.error('[RegisterScreen] Registration error:', error.message);
+      } else {
+        console.error('[RegisterScreen] Registration error:', error);
+      }
+
       let message = 'Something went wrong';
       if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<{ errors?: Record<string, string[]> }>;
-        message =
-          axiosError.response?.data?.errors?.phone_number?.[0] ||
-          axiosError.response?.data?.errors?.non_field_errors?.[0] ||
-          axiosError.message ||
-          message;
+        const axiosError = error as AxiosError<{ 
+          phone_number?: string[];
+          elderly_user?: {
+            phone_number?: string[];
+          };
+          non_field_errors?: string[];
+        }>;
+        
+        const errorData = axiosError.response?.data;
+        
+        // Check for specific phone number errors
+        if (errorData?.phone_number?.includes('User with this phone number already exists.')) {
+          message = 'This caretaker phone number is already registered. Please use a different number or login.';
+        } else if (errorData?.elderly_user?.phone_number?.includes('custom user with this phone number already exists.')) {
+          message = 'This elderly phone number is already registered. Please use a different number.';
+        } else {
+          // Fallback to any other error messages
+          message =
+            axiosError.response?.data?.phone_number?.[0] ||
+            axiosError.response?.data?.elderly_user?.phone_number?.[0] ||
+            axiosError.response?.data?.non_field_errors?.[0] ||
+            'Registration failed. Please try again.';
+        }
       }
-      Alert.alert('Error', message);
+      Alert.alert('Registration Error', message);
     } finally {
       setLoading(false);
     }

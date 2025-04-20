@@ -15,6 +15,8 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { BackgroundGradient } from '@/components/BackgroundGradient';
 import { login, isAuthenticated, getUserRole } from '@/services/auth/authService';
+import axios from 'axios';
+import { AxiosError } from 'axios';
 
 export default function LoginScreen() {
   // Form state
@@ -105,8 +107,40 @@ export default function LoginScreen() {
         Alert.alert('Login Failed', result.error || 'Invalid credentials');
       }
     } catch (error) {
-      console.error('[LoginScreen] Login error details:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      // Log the full error to console for debugging
+      if (error instanceof Error) {
+        console.error('[LoginScreen] Login error:', error.message);
+      } else {
+        console.error('[LoginScreen] Login error:', error);
+      }
+      
+      // Show user-friendly error message based on error type
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ 
+          detail?: string;
+          non_field_errors?: string[];
+        }>;
+        
+        const errorData = axiosError.response?.data;
+        
+        // Check for specific error messages
+        if (errorData?.detail?.includes('No active account found with the given credentials')) {
+          Alert.alert('Login Failed', 'Invalid phone number or password. Please try again.');
+        } else if (errorData?.non_field_errors?.includes('Unable to log in with provided credentials.')) {
+          Alert.alert('Login Failed', 'Invalid phone number or password. Please try again.');
+        } else {
+          // Show the error message from the server if available, otherwise show generic message
+          Alert.alert(
+            'Login Error', 
+            errorData?.detail || 
+            errorData?.non_field_errors?.[0] || 
+            'Unable to login. Please check your internet connection and try again.'
+          );
+        }
+      } else {
+        // For non-Axios errors, show a generic message
+        Alert.alert('Login Error', 'An unexpected error occurred. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }

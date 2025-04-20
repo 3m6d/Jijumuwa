@@ -14,6 +14,9 @@ import { Image } from "expo-image";
 import { useFocusEffect } from "@react-navigation/native";
 import intentResponses from "@/constants/intentResponses";
 import {CONSTANT_WORDS_TO_SPEAK} from "@/constants/wordsToSpeak";
+import { formatToNepaliSummary } from "@/components/formatToNepali";
+import apiClient from "@/api/apiClient";
+import { globalConfig} from "@/global-config";
 
 // Type definition for the response from intent recognition API
 type IntentResponse = {
@@ -62,9 +65,43 @@ export default function TabTwoScreen() {
     Voice.onSpeechError = onSpeechError;
   };
 
-  // Displays and speaks the initial greeting message
-  const greetUser = () => {
+  // Displays and speaks the initial greeting message and fetches latest data
+  const greetUser = async () => {
+    // First greet the user
     speak(CONSTANT_WORDS_TO_SPEAK.greet_customer);
+    
+    // Then fetch and speak the latest data
+    try {
+      const res = await apiClient.get<Array<{
+        doctor_appointments: any[];
+        medication_reminders: any[];
+      }>>("/conversation-logs/");
+      const log = res.data[0]; // get latest
+
+      const nepaliMessage = formatToNepaliSummary(
+        log.doctor_appointments || [],
+        log.medication_reminders || []
+      );
+
+      console.log("Generated Nepali Message:\n", nepaliMessage);
+
+      if (nepaliMessage) {
+        // Wait a bit after the greeting before speaking the data
+        setTimeout(() => {
+          Speech.speak(nepaliMessage, { 
+            language: "ne-NP",
+            onDone: () => {
+              // Start listening for user input after speaking is done
+              startSpeechToText();
+            }
+          });
+        }, 2000); // Wait 2 seconds after greeting
+      }
+    } catch (error) {
+      console.error("Failed to fetch conversation log:", error);
+      // Start listening for user input even if data fetch fails
+      startSpeechToText();
+    }
   };
 
   // Initiates voice recognition if not currently speaking
@@ -241,7 +278,7 @@ export default function TabTwoScreen() {
         ];
         
         // Make API call to local LM Studio server
-        const response = await fetch('http://192.168.1.105:1234/v1/chat/completions', {
+        const response = await fetch('http://100.64.242.16:1234/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -250,7 +287,7 @@ export default function TabTwoScreen() {
             model: "nepaligpt", // Model name as configured in LM Studio
             messages: messages,
             temperature: 0.7,
-            max_tokens: 300, 
+            max_tokens: 150, 
             stream: false
           }),
         });
